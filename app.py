@@ -33,13 +33,15 @@ def serve_assets(filename):
     return send_from_directory('assets', filename)
 
 # Database Configuration
-mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/MOODIFY')
 client = MongoClient(mongodb_uri)
-# Prioritize Atlas (mongodb.net) and use 'moodify_db' database
-if 'mongodb.net' in mongodb_uri or 'mongodb.com' in mongodb_uri:
+try:
+    # Try getting default database from URI (e.g. Atlas string with /dbname)
+    db = client.get_default_database()
+except Exception:
+    # Fallback to 'moodify_db' if no database is defined in the URI
     db = client['moodify_db']
-else:
-    db = client.get_default_database() or client['moodify_db']
+
 users_collection = db['users']
 
 # SMTP Settings
