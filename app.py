@@ -282,69 +282,88 @@ def login():
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        email = request.form.get('email')
-        user_data = users_collection.find_one({"email": email})
-        
-        if user_data:
-            # Generate token
-            from itsdangerous import URLSafeTimedSerializer
-            s = URLSafeTimedSerializer(app.secret_key)
-            token = s.dumps(email, salt='email-confirm')
+        try:
+            email = request.form.get('email')
+            print(f"DEBUG: Forgot password attempt for email: {email}")
+            user_data = users_collection.find_one({"email": email})
             
-            # Create reset link
-            link = url_for('reset_password', token=token, _external=True)
-            
-            # Send Email
-            if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD:
-                try:
-                    msg = MIMEMultipart()
-                    msg['From'] = SMTP_SENDER_EMAIL
-                    msg['To'] = email
-                    msg['Subject'] = "Moodify Password Reset"
-                    
-                    body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
-                    msg.attach(MIMEText(body, 'plain'))
-                    
-                    server = smtplib.SMTP('smtp.gmail.com', 587)
-                    server.starttls()
-                    server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-                    server.send_message(msg)
-                    server.quit()
-                    flash(f"Password reset link sent to {email}.", "success")
-                except Exception as e:
-                    print(f"Email Error: {e}")
-                    flash("Error sending email. Please try again later.", "error")
+            if user_data:
+                # Generate token
+                from itsdangerous import URLSafeTimedSerializer
+                s = URLSafeTimedSerializer(app.secret_key)
+                token = s.dumps(email, salt='email-confirm')
+                
+                # Create reset link
+                link = url_for('reset_password', token=token, _external=True)
+                print(f"DEBUG: Password reset link generated: {link}")
+                
+                # Send Email
+                if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD:
+                    try:
+                        msg = MIMEMultipart()
+                        msg['From'] = SMTP_SENDER_EMAIL
+                        msg['To'] = email
+                        msg['Subject'] = "Moodify Password Reset"
+                        
+                        body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
+                        msg.attach(MIMEText(body, 'plain'))
+                        
+                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server.starttls()
+                        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
+                        server.send_message(msg)
+                        server.quit()
+                        flash(f"Password reset link sent to {email}.", "success")
+                        print("DEBUG: Reset email sent successfully.")
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        print(f"Email Error in /forgot_password: {e}")
+                        flash("Error sending email. Please try again later.", "error")
+                else:
+                    print(f"DEBUG Simulation: Reset Link: {link}") 
+                    flash("Reset link sent (Demo Mode: check console)", "success")
             else:
-                print(f"Simulated Reset Link: {link}") # For development without SMTP
-                flash("Reset link sent (Check server console for demo link)", "success")
-        else:
-            flash("Email not found.", "error")
+                flash("Email not found.", "error")
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"DEBUG: /forgot_password generic error: {e}")
+            flash("Internal Server Error occurred. Our team has been notified.", "error")
             
     return render_template('forgot_password.html')
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-    s = URLSafeTimedSerializer(app.secret_key)
-    
     try:
-        email = s.loads(token, salt='email-confirm', max_age=3600) # 1 hour expiration
-    except SignatureExpired:
-        flash("The reset link has expired.", "error")
-        return redirect(url_for('forgot_password'))
-    except Exception:
-        flash("Invalid reset link.", "error")
-        return redirect(url_for('forgot_password'))
+        from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+        s = URLSafeTimedSerializer(app.secret_key)
         
-    if request.method == 'POST':
-        password = request.form.get('password')
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        
-        users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
-        flash("Your password has been updated! Please login.", "success")
-        return redirect(url_for('login'))
-        
-    return render_template('reset_password.html', token=token)
+        try:
+            email = s.loads(token, salt='email-confirm', max_age=3600) # 1 hour expiration
+        except SignatureExpired:
+            flash("The reset link has expired.", "error")
+            return redirect(url_for('forgot_password'))
+        except Exception as e:
+            print(f"DEBUG: Token validation error: {e}")
+            flash("Invalid reset link.", "error")
+            return redirect(url_for('forgot_password'))
+            
+        if request.method == 'POST':
+            password = request.form.get('password')
+            # Ensure proper encoding for bcrypt
+            hashed_password = bcrypt.generate_password_hash(password.encode('utf-8')).decode('utf-8')
+            
+            users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
+            flash("Your password has been updated! Please login.", "success")
+            return redirect(url_for('login'))
+            
+        return render_template('reset_password.html', token=token)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"DEBUG: /reset_password error: {e}")
+        return render_template('reset_password.html', token=token, error=str(e))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
