@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Moodify{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes slideUpInput {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-card {
+        animation: scaleIn 0.6s ease-out;
+    }
+
+    .login-card h2 {
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .form-group {
+        animation: slideUpInput 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+
+    input {
+        transition: all 0.3s ease;
+    }
+
+    input:focus {
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        border-color: var(--primary) !important;
+    }
+
+    .login-btn {
+        animation: slideUpInput 0.6s ease-out 0.4s both;
+        transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
+    }
+
+    .signup-link {
+        animation: slideUpInput 0.6s ease-out 0.5s both;
+    }
+
+    /* Login Success Popup */
+    .success-popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-popup-overlay.show {
+        display: flex;
+        animation: fadeInBg 0.3s ease-out;
+    }
+
+    .success-popup-box {
+        background: var(--bg-card);
+        border: 2px solid var(--glass-border);
+        border-radius: 2rem;
+        padding: 4rem 3rem;
+        text-align: center;
+        min-width: 450px;
+        box-shadow: var(--shadow);
+        animation: popupScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        color: #10b981;
+        margin-bottom: 1.5rem;
+        animation: iconBounce 0.6s ease-out;
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 1rem;
+    }
+
+    .success-message {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .success-user-name {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .loading-bar {
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        border-radius: 2px;
+        margin-top: 2rem;
+        animation: loadingBarFill 2.5s ease-out;
+    }
+
+    @keyframes fadeInBg {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes popupScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9) rotateX(10deg);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) rotateX(0);
+        }
+    }
+
+    @keyframes iconBounce {
+        0%, 100% { transform: scale(1) translateY(0); }
+        50% { transform: scale(1.1) translateY(-10px); }
+    }
+
+    @keyframes loadingBarFill {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+</style>
+<section class="animate-up" style="padding: 5rem 0;">
+    <div class="container">
+        <div class="glass login-card" style="max-width: 450px; margin: 0 auto; padding: 3rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Welcome <span
+                        style="color: var(--primary);">Back</span></h2>
+                <p style="color: var(--text-muted);">Login to access your personalized vibes.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div
+                style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Email
+                        Address</label>
+                    <input type="email" name="email" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="password" required
+                            style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                        <button type="button" class="toggle-password" onclick="togglePassword('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-size: 0.95rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-muted); white-space: nowrap; user-select: none;">
+                        <input type="checkbox" name="remember"
+                            style="margin-right: 0.75rem; accent-color: var(--primary); width: 1.1rem; height: 1.1rem; cursor: pointer;">
+                        Remember me
+                    </label>
+                    <a href="/forgot_password" style="color: var(--secondary); text-decoration: none; font-weight: 500;">Forgot
+                        Password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary login-btn" style="width: 100%; margin-top: 2rem; padding: 1rem;">Sign
+                    In</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;" class="signup-link">
+                New to Moodify? <a href="/signup"
+                    style="color: var(--primary); text-decoration: none; font-weight: 600;">Create account</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Login Success Popup -->
+<div id="loginSuccessPopup" class="success-popup-overlay">
+    <div class="success-popup-box">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="success-title">Welcome Back!</h2>
+        <p class="success-message">
+            Successfully logged in as<br>
+            <span class="success-user-name" id="successUserName">User</span>
+        </p>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Redirecting to your dashboard...</p>
+        <div class="loading-bar"></div>
+    </div>
+</div>
+
+<!-- Account Created Popup (from signup) -->
+<div id="accountCreatedPopup" class="success-popup-overlay" style="display:none;">
+    <div class="success-popup-box">
+        <div class="success-icon" style="color:#10b981;">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="success-title">Account Created</h2>
+        <p class="success-message" id="accountCreatedText">Your account was created successfully. Redirecting to login...</p>
+        <div class="loading-bar"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Show login success popup
+    window.addEventListener('load', function() {
+        {% if login_success %}
+            const popup = document.getElementById('loginSuccessPopup');
+            const userNameElement = document.getElementById('successUserName');
+            
+            userNameElement.textContent = '{{ username }}';
+            popup.classList.add('show');
+            
+            // Redirect after 2.8 seconds
+            setTimeout(function() {
+                window.location.href = '/';
+            }, 2800);
+        {% endif %}
+
+        // Show account-created popup if server flashed success message
+        const flashed = {{ get_flashed_messages(with_categories=true)|tojson|safe }};
+        if(flashed && flashed.length){
+            for(const m of flashed){
+                const cat = m[0], text = m[1] || '';
+                if(cat === 'success' && /account created|created|account/i.test(text)){
+                    const ap = document.getElementById('accountCreatedPopup');
+                    const at = document.getElementById('accountCreatedText');
+                    if(at) at.textContent = text;
+                    if(ap){ ap.style.display = 'flex'; ap.classList.add('show');
+                        // auto-hide after 3s
+                        setTimeout(()=>{ ap.style.display='none'; }, 3000);
+                    }
+                    break;
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Moodify{% endblock %}
+
+{% block content %}
+<section class="animate-up" style="padding: 5rem 0;">
+    <div class="container">
+        <div class="glass" style="max-width: 450px; margin: 0 auto; padding: 3rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Join <span
+                        style="color: var(--secondary);">Moodify</span></h2>
+                <p style="color: var(--text-muted);">Start your musical journey with AI.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div
+                style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="/signup" method="POST" onsubmit="return validatePasswords()">
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Full
+                        Name</label>
+                    <input type="text" name="name" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Email
+                        Address</label>
+                    <input type="email" name="email" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="password" required
+                            style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                        <button type="button" class="toggle-password" onclick="togglePassword('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Confirm
+                        Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirm_password" required
+                            style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePassword('confirm_password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 2rem; padding: 1rem;">Create Account</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                Already have an account? <a href="/login"
+                    style="color: var(--secondary); text-decoration: none; font-weight: 600;">Sign in</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Signup success modal -->
+<div id="signupSuccessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background: var(--bg-card); padding:2.5rem; border-radius:1rem; width:90%; max-width:520px; text-align:center; border:1px solid var(--glass-border); box-shadow: var(--shadow);">
+        <div style="font-size:3rem; color:#10b981; margin-bottom:0.5rem;">🎉</div>
+        <h3 style="margin:0 0 0.5rem 0;">Account Created Successfully</h3>
+        <p id="signupSuccessText" style="color:var(--text-muted); margin-bottom:1.25rem;">Welcome to Moodify — your account was created.</p>
+        <div style="display:flex; gap:0.75rem; justify-content:center;">
+            <a id="goToLoginBtn" href="/login" class="btn btn-primary" style="padding:0.6rem 1rem; border-radius:0.6rem;">Go to Login</a>
+            <button id="closeSignupModal" class="btn" style="background:transparent; border:1px solid var(--glass-border); color:var(--primary); padding:0.6rem 1rem; border-radius:0.6rem;">Dismiss</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function validatePasswords() {
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm_password').value;
+
+        if (password !== confirm) {
+            alert("Passwords do not match!");
+            return false;
+        }
+        return true;
+    }
+
+    // Show modal if server flashed account created success
+    (function(){
+        const messages = {{ get_flashed_messages(with_categories=true)|tojson|safe }};
+        if(messages && messages.length){
+            for(const m of messages){
+                const cat = m[0], text = m[1] || '';
+                if(cat === 'success' && /account created|created|account/i.test(text)){
+                    const modal = document.getElementById('signupSuccessModal');
+                    const txt = document.getElementById('signupSuccessText');
+                    if(txt) txt.textContent = text;
+                    modal.style.display = 'flex';
+                    document.getElementById('closeSignupModal').addEventListener('click', ()=> modal.style.display='none');
+                    break;
+                }
+            }
+        }
+    })();
+</script>
+{% endblock %}

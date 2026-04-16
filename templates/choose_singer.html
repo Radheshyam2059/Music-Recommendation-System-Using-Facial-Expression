@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Artist - Moodify{% endblock %}
+
+{% block content %}
+<section class="animate-up" style="min-height: 80vh; display: flex; align-items: center; padding: 4rem 0;">
+	<div class="container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; align-items: start;">
+
+		<!-- Left Column: Info & Search -->
+		<div style="position: sticky; top: 120px;">
+			<h1 style="font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 2rem;">
+				Choose your <br><span style="color: var(--secondary);">Vibe Master.</span>
+			</h1>
+			<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6;">
+				Select from our curated list of {{ data|capitalize }} icons or type your favorite artist below to
+				personalize your recommendations.
+			</p>
+
+			<div class="glass" style="padding: 2rem; border-color: var(--secondary);">
+				<label style="display: block; margin-bottom: 1rem; font-weight: 600; color: var(--text-main);">Search
+					Artist</label>
+				<div style="position: relative;">
+					<i class="fas fa-search"
+						style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+					<input type="text" id="artistSearch" placeholder="Start typing name..."
+						style="width: 100%; padding: 1rem 1rem 1rem 3rem; border-radius: 0.75rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: white; font-size: 1.1rem; outline: none; transition: var(--transition);">
+				</div>
+				<p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+					<i class="fas fa-info-circle" style="margin-right: 0.3rem;"></i> We'll show the artist's full name
+					as you type.
+				</p>
+			</div>
+		</div>
+
+		<!-- Right Column: Artist Selection -->
+		<div class="glass" style="padding: 3.5rem;">
+			<form action="{{url_for('emotion_detect')}}" method="POST" id="artistForm">
+				<input type="hidden" name="language" value="{{ data }}">
+
+				<h2 style="font-size: 1.75rem; margin-bottom: 2.5rem; display: flex; align-items: center;">
+					<i class="fas fa-star" style="color: var(--secondary); margin-right: 1rem;"></i>
+					Top {{ data|capitalize }} Artists
+				</h2>
+
+				<div class="radio-group" id="artistGrid"
+					style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+					{# ...existing code... #}
+{% set singers = [] %}
+{% if data == "telugu" %}
+    {% set singers = [
+        ('sid sriram', 'Sid Sriram'), ('karthik', 'Karthik'), ('sunitha', 'Sunitha'), ('geetha madhuri', 'Geetha Madhuri'),
+        ('srikrishna', 'Sri Krishna'), ('mangli', 'Mangli'), ('hemachandra', 'Hemachandra'), ('srinivas', 'Srinivas'),
+        ('tippu', 'Tippu'), ('shakthisree gopalan', 'Shakthisree Gopalan'), ('ananya bhat', 'Ananya Bhat'), ('deepak blue', 'Deepak Blue'),
+        ('rahul sipligunj', 'Rahul Sipligunj'), ('smitha', 'Smitha'), ('jonita gandhi', 'Jonita Gandhi'), ('sp balasubrahmanyam', 'S.P. Balasubrahmanyam'),
+        ('k.s. chithra', 'K.S. Chithra'), ('hariharan', 'Hariharan'), ('shreya ghoshal', 'Shreya Ghoshal'), ('s.p. sailaja', 'S.P. Sailaja'),
+        ('malgudi subha', 'Malgudi Subha'), ('mano', 'Mano'), ('ramya behara', 'Ramya Behara'), ('anurag kulkarni', 'Anurag Kulkarni'),
+        ('revanth', 'Revanth'), ('noel sean', 'Noel Sean'), ('karunya', 'Karunya'), ('chinmayi', 'Chinmayi'),
+        ('pranavi', 'Pranavi'), ('sai charan', 'Sai Charan'), ('sahithi', 'Sahithi'), ('sp charan', 'S.P. Charan'),
+        ('yazin nizar', 'Yazin Nizar'), ('shweta mohan', 'Shweta Mohan'), ('anudeep dev', 'Anudeep Dev'), ('ramya nsk', 'Ramya NSK')
+    ] %}
+{% elif data == "hindi" %}
+    {% set singers = [
+        ('kishore kumar', 'Kishore Kumar'), ('arijit singh', 'Arijit Singh'), ('amit trivedi', 'Amit Trivedi'), ('pritam', 'Pritam'),
+        ('mohammed rafi', 'Mohammed Rafi'), ('kk', 'KK'), ('lata mangeshkar', 'Lata Mangeshkar'), ('asha bhosle', 'Asha Bhosle'),
+        ('sonu nigam', 'Sonu Nigam'), ('shreya ghoshal', 'Shreya Ghoshal'), ('udit narayan', 'Udit Narayan'), ('sunidhi chauhan', 'Sunidhi Chauhan'),
+        ('mukesh', 'Mukesh'), ('kumar sanu', 'Kumar Sanu'), ('alka yagnik', 'Alka Yagnik'), ('ar rahman', 'A.R. Rahman'),
+        ('vishal dadlani', 'Vishal Dadlani'), ('shekhar ravjiani', 'Shekhar Ravjiani'), ('neha kakkar', 'Neha Kakkar'), ('tony kakkar', 'Tony Kakkar'),
+        ('jubin nautiyal', 'Jubin Nautiyal'), ('darshan raval', 'Darshan Raval'), ('armaan malik', 'Armaan Malik'), ('badshah', 'Badshah'),
+        ('honey singh', 'Yo Yo Honey Singh'), ('mika singh', 'Mika Singh'), ('himesh reshammiya', 'Himesh Reshammiya'), ('kailash kher', 'Kailash Kher'),
+        ('rahat fateh ali khan', 'Rahat Fateh Ali Khan'), ('atif aslam', 'Atif Aslam'), ('mohit chauhan', 'Mohit Chauhan'), ('sukhwinder singh', 'Sukhwinder Singh'),
+        ('shaan', 'Shaan'), ('kavita krishnamurthy', 'Kavita Krishnamurthy'), ('anuradha paudwal', 'Anuradha Paudwal'), ('sadhana sargam', 'Sadhana Sargam'),
+        ('jagjit singh', 'Jagjit Singh'), ('pankaj udhas', 'Pankaj Udhas'), ('hariharan', 'Hariharan'), ('shankar mahadevan', 'Shankar Mahadevan'),
+        ('lucky ali', 'Lucky Ali'), ('adnan sami', 'Adnan Sami'), ('palak muchhal', 'Palak Muchhal'), ('tulsi kumar', 'Tulsi Kumar'),
+        ('dhvani bhanushali', 'Dhvani Bhanushali'), ('asees kaur', 'Asees Kaur'), ('shilpa rao', 'Shilpa Rao'), ('rekha bhardwaj', 'Rekha Bhardwaj')
+    ] %}
+{% elif data == "english" %}
+    {% set singers = [
+        ('taylor swift', 'Taylor Swift'), ('ed sheeran', 'Ed Sheeran'), ('ariana grande', 'Ariana Grande'), ('justin bieber', 'Justin Bieber'),
+        ('beyonce', 'Beyoncé'), ('billie eilish', 'Billie Eilish'), ('dua lipa', 'Dua Lipa'), ('bruno mars', 'Bruno Mars'),
+        ('sam smith', 'Sam Smith'), ('adele', 'Adele'), ('shawn mendes', 'Shawn Mendes'), ('selena gomez', 'Selena Gomez'),
+        ('rihanna', 'Rihanna'), ('harry styles', 'Harry Styles'), ('lady gaga', 'Lady Gaga'), ('eminem', 'Eminem'),
+        ('the weeknd', 'The Weeknd'), ('sza', 'SZA'), ('olivia rodrigo', 'Olivia Rodrigo'), ('charlie puth', 'Charlie Puth'),
+        ('john legend', 'John Legend'), ('alicia keys', 'Alicia Keys'), ('lizzo', 'Lizzo'), ('halsey', 'Halsey'),
+        ('camila cabello', 'Camila Cabello'), ('khalid', 'Khalid'), ('meghan trainor', 'Meghan Trainor'), ('zayn', 'ZAYN'),
+        ('bebe rexha', 'Bebe Rexha'), ('demi lovato', 'Demi Lovato'), ('niall horan', 'Niall Horan')
+    ] %}
+	{% elif data == "tamil" %}
+    {% set singers = [
+        ('s.p. balasubrahmanyam', 'S.P. Balasubrahmanyam'), ('k.j. yesudas', 'K.J. Yesudas'), ('hariharan', 'Hariharan'), ('unnikrishnan', 'Unnikrishnan'),
+        ('chinmayi', 'Chinmayi'), ('shreya ghoshal', 'Shreya Ghoshal'), ('anirudh ravichander', 'Anirudh Ravichander'), ('sid sriram', 'Sid Sriram'),
+        ('karthik', 'Karthik'), ('benny dayal', 'Benny Dayal'), ('srinivas', 'Srinivas'), ('chitra', 'Chitra'),
+        ('swetha mohan', 'Swetha Mohan'), ('malgudi subha', 'Malgudi Subha'), ('shashaa tirupati', 'Shashaa Tirupati'), ('haricharan', 'Haricharan'),
+        ('tippu', 'Tippu'), ('krish', 'Krish'), ('shweta mohan', 'Shweta Mohan'), ('anuradha sriram', 'Anuradha Sriram'),
+        ('manicka vinayagam', 'Manicka Vinayagam'), ('s.p. sailaja', 'S.P. Sailaja'), ('k.s. chithra', 'K.S. Chithra'), ('janaki', 'S. Janaki'),
+        ('shankar mahadevan', 'Shankar Mahadevan'), ('yuvan shankar raja', 'Yuvan Shankar Raja'), ('vijay prakash', 'Vijay Prakash'), ('pradeep kumar', 'Pradeep Kumar'),
+        ('ramya nsk', 'Ramya NSK'), ('dhee', 'Dhee'), ('jonita gandhi', 'Jonita Gandhi'), ('gv prakash', 'G.V. Prakash')
+    ] %}
+{% elif data == "malayalam" %}
+    {% set singers = [
+        ('k.j. yesudas', 'K.J. Yesudas'), ('ks chithra', 'K.S. Chithra'), ('sujatha mohan', 'Sujatha Mohan'), ('manjari', 'Manjari'),
+        ('vineeth srinivasan', 'Vineeth Srinivasan'), ('shreya ghoshal', 'Shreya Ghoshal'), ('unni menon', 'Unni Menon'), ('m.g. sreekumar', 'M.G. Sreekumar'),
+        ('bijibal', 'Bijibal'), ('rimi tomy', 'Rimi Tomy'), ('jayachandran', 'P. Jayachandran'), ('haricharan', 'Haricharan'),
+        ('rahul raj', 'Rahul Raj'), ('anuradha sriram', 'Anuradha Sriram'), ('remya nambeesan', 'Remya Nambeesan'), ('sithara krishnakumar', 'Sithara Krishnakumar'),
+        ('sooraj santhosh', 'Sooraj Santhosh'), ('arun alappuzha', 'Arun Alappuzha'), ('pradeep kumar', 'Pradeep Kumar'), ('madhu balakrishnan', 'Madhu Balakrishnan')
+    ] %}
+{% elif data == "bhojpuri" %}
+    {% set singers = [
+        ('manoj tiwari', 'Manoj Tiwari'), ('kalpana patowary', 'Kalpana Patowary'), ('indrajeet singh', 'Indrajeet Singh'), ('pawan singh', 'Pawan Singh'),
+        ('khesari lal yadav', 'Khesari Lal Yadav'), ('sharda sinha', 'Sharda Sinha'), ('dinesh lal yadav', 'Dinesh Lal Yadav'), ('anjana singh', 'Anjana Singh'),
+        ('rakesh mishra', 'Rakesh Mishra'), ('gunjan singh', 'Gunjan Singh'), ('priyanka singh', 'Priyanka Singh'), ('amrapali dubey', 'Amrapali Dubey'),
+        ('alok kumar', 'Alok Kumar'), ('pakhi hegde', 'Pakhi Hegde'), ('smita singh', 'Smita Singh')
+    ] %}
+{% elif data == "punjabi" %}
+    {% set singers = [
+        ('sidhu moosewala', 'Sidhu Moosewala'), ('amrinder gill', 'Amrinder Gill'), ('karan aujla', 'Karan Aujla'), ('diljit dosanjh', 'Diljit Dosanjh'),
+        ('guru randhawa', 'Guru Randhawa'), ('jassie gill', 'Jassie Gill'), ('ap dhillon', 'AP Dhillon'), ('shubh', 'Shubh'),
+        ('gippy grewal', 'Gippy Grewal'), ('hardy sandhu', 'Hardy Sandhu'), ('mankirt aulakh', 'Mankirt Aulakh'), ('ammy virk', 'Ammy Virk'),
+        ('satinder sartaaj', 'Satinder Sartaaj'), ('gurdas maan', 'Gurdas Maan'), ('babbu maan', 'Babbu Maan'), ('dilpreet dhillon', 'Dilpreet Dhillon'),
+        ('jordan sandhu', 'Jordan Sandhu'), ('nimrat khaira', 'Nimrat Khaira'), ('sunanda sharma', 'Sunanda Sharma'), ('jasmine sandlas', 'Jasmine Sandlas'),
+        ('kulwinder billa', 'Kulwinder Billa'), ('tarsem jassar', 'Tarsem Jassar'), ('ranjit bawa', 'Ranjit Bawa'), ('ninja', 'Ninja'),
+        ('parmish verma', 'Parmish Verma'), ('b praak', 'B Praak'), ('prabh gill', 'Prabh Gill'), ('gurnam bhullar', 'Gurnam Bhullar'),
+        ('kaka', 'Kaka'), ('khan bhaini', 'Khan Bhaini'), ('sajjan adeel', 'Sajjan Adeel'), ('garry sandhu', 'Garry Sandhu'),
+        ('happy raikoti', 'Happy Raikoti'), ('shivjot', 'Shivjot'), ('prem dhillon', 'Prem Dhillon'), ('arjan dhillon', 'Arjan Dhillon')
+    ] %}
+{% endif %}
+{# ...existing code for radio buttons and manual input... #}
+					{% for val, name in singers %}
+					<label class="radio-card artist-card" data-name="{{ name|lower }}"
+						style="display: {% if loop.index > 6 %}none{% else %}block{% endif %};">
+						<input type="radio" name="singer" value="{{ val }}" {% if loop.first %}checked{% endif %}>
+						<div class="card-content" style="padding: 1.5rem; text-align: left;">
+							<div style="font-weight: 600; font-size: 1.1rem;">{{ name }}</div>
+							<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Popular
+								Artist</div>
+						</div>
+					</label>
+					{% endfor %}
+				</div>
+
+				<div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+					<label style="display: block; margin-bottom: 1rem; font-weight: 600;">Can't find your artist? Type
+						it here:</label>
+					<input type="text" name="singer_other" id="singer_other" placeholder="Full Artist Name..."
+						style="width: 100%; padding: 1.2rem; border-radius: 0.75rem; background: var(--bg-dark); border: 2px solid var(--glass-border); color: white; font-size: 1.1rem;">
+				</div>
+
+				<button type="submit" class="btn btn-primary btn-lg"
+					style="width: 100%; margin-top: 3rem; padding: 1.2rem; font-size: 1.2rem; border-radius: 0.75rem;">
+					Start Detection <i class="fas fa-camera" style="margin-left: 0.75rem;"></i>
+				</button>
+			</form>
+		</div>
+	</div>
+</section>
+
+<script>
+	const searchInput = document.getElementById('artistSearch');
+	const artistCards = document.querySelectorAll('.artist-card');
+	const artistOther = document.getElementById('singer_other');
+
+	searchInput.addEventListener('input', (e) => {
+		const term = e.target.value.toLowerCase();
+
+		artistCards.forEach((card, index) => {
+			const name = card.getAttribute('data-name');
+			if (term.length > 0) {
+				// If searching, show matches regardless of index
+				if (name.includes(term)) {
+					card.style.display = 'block';
+					card.style.animation = 'fadeIn 0.3s ease';
+				} else {
+					card.style.display = 'none';
+				}
+			} else {
+				// If search is empty, reset to top 6 only
+				if (index < 6) {
+					card.style.display = 'block';
+				} else {
+					card.style.display = 'none';
+				}
+			}
+		});
+	});
+
+	// When the user starts typing in the "Other Artist" field, unselect any radio buttons
+	// This ensures no conflict between a selected radio and the manual input
+	artistOther.addEventListener('focus', () => {
+		const checkedRadio = document.querySelector('input[name="singer"]:checked');
+		if (checkedRadio) {
+			checkedRadio.checked = false;
+		}
+	});
+
+	// Style tweak for focus
+	searchInput.addEventListener('focus', () => {
+		searchInput.parentElement.style.boxShadow = '0 0 15px rgba(168, 85, 247, 0.3)';
+		searchInput.style.borderColor = 'var(--secondary)';
+	});
+	searchInput.addEventListener('blur', () => {
+		searchInput.parentElement.style.boxShadow = 'none';
+		searchInput.style.borderColor = 'var(--glass-border)';
+	});
+</script>
+
+<style>
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (max-width: 968px) {
+		.container {
+			grid-template-columns: 1fr !important;
+		}
+
+		div[style*="position: sticky"] {
+			position: relative !important;
+			top: 0 !important;
+		}
+	}
+
+	/* Selected state for radio cards */
+	.radio-card input:checked+.card-content {
+		border-color: var(--secondary);
+		box-shadow: 0 0 0 2px var(--secondary);
+		background: rgba(168, 85, 247, 0.1);
+	}
+</style>
+{% endblock %}

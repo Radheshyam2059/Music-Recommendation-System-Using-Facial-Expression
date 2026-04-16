@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Features - Moodify{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes iconFloat {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-15px);
+        }
+    }
+
+    .feature-card {
+        animation: slideUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+    .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .feature-icon {
+        animation: iconFloat 3s ease-in-out infinite;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        animation: none;
+        transform: scale(1.2) rotateZ(10deg);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(99, 102, 241, 0.2);
+    }
+</style>
+<section class="hero animate-up">
+    <div class="container">
+        <h1>Powerful <span style="color: var(--accent);">Features</span></h1>
+        <p>Everything you need to discover your next favorite track.</p>
+    </div>
+</section>
+
+<section style="padding: 2rem 0 5rem;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem;">
+            <!-- Existing Features -->
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-video feature-icon" style="color: var(--primary); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Live Face Scanning</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Proprietary algorithms that scan your face and detect 7 key emotional states instantly.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(168, 85, 247, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-upload feature-icon" style="color: var(--secondary); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Image Upload</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Don't have a camera? Just upload a photo and let our AI do the work for you from any source.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(6, 182, 212, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-microchip feature-icon" style="color: var(--accent); font-size: 1.5rem;"></i>
+                </div>
+                <h3>High Accuracy AI</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Powered by a custom CNN model trained on thousands of data points for 95% accuracy.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-chart-line feature-icon" style="color: var(--primary); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Mood Analytics</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Track your emotional journey with interactive charts and historical mood distribution.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(168, 85, 247, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-id-card feature-icon" style="color: var(--secondary); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Smart Profile</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">A personalized dashboard where you can manage your preferences, artists, and languages.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(6, 182, 212, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-language feature-icon" style="color: var(--accent); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Cross-Cultural Support</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Discover music in Hindi, Telugu, Tamil, and Malayalam with intelligent language switches.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-cloud feature-icon" style="color: var(--primary); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Cloud Persistence</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Your history and settings are synced securely to the cloud, accessible anytime, anywhere.</p>
+            </div>
+
+            <div class="glass feature-card" style="padding: 2.5rem; text-align: center;">
+                <div style="width: 70px; height: 70px; background: var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-moon feature-icon" style="color: var(--text-main); font-size: 1.5rem;"></i>
+                </div>
+                <h3>Dual Theme UI</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.95rem;">Switch between breathtaking Dark visuals and clean Light interfaces with a single click.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

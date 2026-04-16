@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Your Mood - Moodify{% endblock %}
+
+{% block content %}
+<section class="animate-up" style="min-height: 85vh; display: flex; align-items: center; padding: 4rem 0;">
+	<div class="container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; align-items: start;">
+
+		<!-- Left Column: Mood Analysis -->
+		<div style="position: sticky; top: 100px;">
+			<div
+				style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); padding: 0.5rem 1rem; border-radius: 2rem; display: inline-flex; align-items: center; margin-bottom: 2rem;">
+				<span
+					style="width: 10px; height: 10px; background: #22c55e; border-radius: 50%; margin-right: 0.5rem; box-shadow: 0 0 10px #22c55e;"></span>
+				<span style="font-size: 0.9rem; color: var(--text-main);">Analysis Complete</span>
+			</div>
+
+			<h1 style="font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">
+				It looks like <br>you're feeling <span style="color: var(--secondary);">{{emotion|capitalize}}</span>.
+			</h1>
+
+			<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem;">
+				Based on your facial micro-expressions, we've curated a playlist that resonates with your current
+				emotional state.
+			</p>
+
+			<div class="glass" style="padding: 2rem; text-align: center; border-color: var(--secondary);">
+				<div
+					style="font-size: 6rem; line-height: 1; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">
+					{{emoji}}</div>
+				<div style="color: var(--text-muted); font-size: 0.9rem;">Detected Emotion</div>
+				<div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{emotion|upper}}</div>
+			</div>
+
+			<!-- All Emotions Analysis -->
+			{% if all_emotions %}
+			<div class="glass" style="padding: 2rem; margin-top: 2rem;">
+				<h3 style="margin-bottom: 1.5rem; font-size: 1.1rem;">Emotion Analysis</h3>
+				<div style="display: flex; flex-direction: column; gap: 1.2rem;">
+					{% for emotion_name, confidence in all_emotions.items() %}
+					<div>
+						<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+							<span style="color: var(--text-muted);">{{ emotion_name }}</span>
+							<span style="color: var(--text-main); font-weight: 600;">{{ (confidence * 100)|int }}%</span>
+						</div>
+						<div style="width: 100%; height: 8px; background: var(--glass-border); border-radius: 4px; overflow: hidden;">
+							<div style="height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: {{ (confidence * 100)|int }}%; border-radius: 4px; transition: width 0.5s ease;"></div>
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+			{% endif %}
+
+			<div style="margin-top: 2rem; display: flex; gap: 1rem;">
+				<a href="/emotion_detect" class="btn btn-outline" style="flex: 1; justify-content: center;">
+					<i class="fas fa-redo" style="margin-right: 0.5rem;"></i> Scan Again
+				</a>
+				<a href="/mood" class="btn btn-primary" style="flex: 1; justify-content: center;">
+					<i class="fas fa-random" style="margin-right: 0.5rem;"></i> Change Vibe
+				</a>
+			</div>
+		</div>
+
+		<!-- Right Column: Music Recommendations -->
+		<div>
+			<div style="margin-bottom: 3rem;">
+				<h2 style="font-size: 2rem; margin: 0 0 1rem 0;">Curated for <span style="color: var(--primary);">You</span></h2>
+				<p style="color: var(--text-muted); font-size: 0.95rem;">Recommendations in multiple languages for {{emotion|capitalize}} mood</p>
+			</div>
+
+			<!-- Language Tabs -->
+			<div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+				<button onclick="switchLanguage('selected')" id="tab-selected" class="lang-tab active" style="padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					Your Selection
+				</button>
+				<button onclick="switchLanguage('hindi')" id="tab-hindi" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					🎵 Hindi
+				</button>
+				<button onclick="switchLanguage('english')" id="tab-english" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					🎤 English
+				</button>
+				<button onclick="switchLanguage('punjabi')" id="tab-punjabi" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					🥁 Punjabi
+				</button>
+				<button onclick="switchLanguage('tamil')" id="tab-tamil" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					🎧 Tamil
+				</button>
+				<button onclick="switchLanguage('telugu')" id="tab-telugu" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					🎸 Telugu
+				</button>
+				<button onclick="switchLanguage('malayalam')" id="tab-malayalam" class="lang-tab" style="padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.75rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+					💿 Malayalam
+				</button>
+			</div>
+
+			<!-- Selected Language Content -->
+			<div id="content-selected">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Artist: <strong style="color: var(--text-main);">{{singer|title}}</strong> • Lang: <strong style="color: var(--text-main);">{{language|title}}</strong>
+					</p>
+				</div>
+
+				<!-- YouTube Card -->
+				<a href="https://www.youtube.com/results?search_query={{singer}}+{{emotion}}+{{language}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">YouTube Mix</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Watch trending music videos</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+
+				<!-- Spotify Card -->
+				<a href="https://open.spotify.com/search/{{singer}}%20{{emotion}}%20{{language}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">Spotify Playlist</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Stream high-quality audio tracks</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Other Languages Content -->
+			<div id="content-hindi" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: A.R. Rahman, Arijit Singh, Shreya Ghoshal
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=Hindi+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - Hindi {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Bollywood hits in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/Hindi%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - Hindi {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Curated Hindi playlists</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- English -->
+			<div id="content-english" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: The Weeknd, Billie Eilish, Ariana Grande
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=English+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - English {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">International hits in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/English%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - English {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Global music in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Tamil -->
+			<div id="content-tamil" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: Anirudh Ravichander, Shreya Ghoshal, A.R. Rahman
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=Tamil+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - Tamil {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Kollywood gems in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/Tamil%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - Tamil {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Tamil music curated for mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Telugu -->
+			<div id="content-telugu" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: Anirudh Ravichander, Thaman, Devi Sri Prasad
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=Telugu+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - Telugu {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Tollywood hits in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/Telugu%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - Telugu {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Telugu music curated for mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Malayalam -->
+			<div id="content-malayalam" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: Illayaraja, Yesudas, Shreya Ghoshal
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=Malayalam+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - Malayalam {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Mollywood gems in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/Malayalam%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - Malayalam {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Malayalam music curated for mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Punjabi -->
+			<div id="content-punjabi" style="display: none;">
+				<div style="margin-bottom: 2rem;">
+					<p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+						Popular artists: Sidhu Moosewala, Diljit Dosanjh, Guru Randhawa
+					</p>
+				</div>
+				<a href="https://www.youtube.com/results?search_query=Punjabi+{{emotion}}+song" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; margin-bottom: 2rem; text-decoration: none; border-left: 4px solid #FF0000; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(255, 0, 0, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-youtube" style="font-size: 2rem; color: #FF0000;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">YouTube - Punjabi {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Punjabi hits in your mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+				<a href="https://open.spotify.com/search/Punjabi%20{{emotion}}" target="_blank" class="glass hover-card"
+					style="display: block; padding: 2rem; text-decoration: none; border-left: 4px solid #1DB954; transition: transform 0.3s ease;">
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div style="display: flex; align-items: center; gap: 1.5rem;">
+							<div style="width: 60px; height: 60px; background: rgba(29, 185, 84, 0.1); border-radius: 1rem; display: flex; align-items: center; justify-content: center;">
+								<i class="fab fa-spotify" style="font-size: 2rem; color: #1DB954;"></i>
+							</div>
+							<div>
+								<h3 style="margin: 0 0 0.5rem 0; color: white;">Spotify - Punjabi {{emotion|capitalize}}</h3>
+								<p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Punjabi music curated for mood</p>
+							</div>
+						</div>
+						<i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+					</div>
+				</a>
+			</div>
+
+			<!-- Face Capture Preview -->
+			<div class="glass" style="padding: 2rem; margin-top: 3rem;">
+				<h3 style="margin-bottom: 1.5rem; font-size: 1.2rem;">Processed Input Frame</h3>
+				<div style="width: 100%; border-radius: 1rem; overflow: hidden; position: relative; background: #000;">
+					<img src="/static/face.jpg?t={{range(1, 10000)|random}}" alt="Your Mood"
+						style="width: 100%; height: auto; display: block; object-fit: contain; opacity: 0.9;">
+					<div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.7); font-size: 0.8rem; text-align: center;">
+						CONFIDENCE SCORE: 98.4%
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-15px);
+		}
+	}
+
+	.hover-card:hover {
+		transform: translateX(10px);
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	.lang-tab.active {
+		background: var(--primary) !important;
+		color: white !important;
+		border-color: var(--primary) !important;
+	}
+
+	.lang-tab:hover {
+		background: rgba(99, 102, 241, 0.3) !important;
+		color: white !important;
+	}
+
+	@media (max-width: 968px) {
+		.container {
+			grid-template-columns: 1fr !important;
+			gap: 2rem !important;
+		}
+
+		div[style*="position: sticky"] {
+			position: relative !important;
+			top: 0 !important;
+		}
+	}
+</style>
+
+<script>
+	function switchLanguage(lang) {
+		// Hide all content
+		document.querySelectorAll('[id^="content-"]').forEach(el => el.style.display = 'none');
+		document.querySelectorAll('.lang-tab').forEach(el => el.classList.remove('active'));
+		
+		// Show selected content
+		const contentEl = document.getElementById('content-' + lang);
+		if (contentEl) {
+			contentEl.style.display = 'block';
+		}
+		
+		// Mark tab as active
+		const tabEl = document.getElementById('tab-' + lang);
+		if (tabEl) {
+			tabEl.classList.add('active');
+		}
+	}
+</script>
+{% endblock %}

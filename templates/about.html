@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - Moodify{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes hoverLift {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(-15px);
+        }
+    }
+
+    @keyframes imagePulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.08);
+        }
+    }
+
+    .team-grid > div {
+        /* disable entrance animation; keep hover interactions */
+        opacity: 1;
+        animation: none;
+        transform: none;
+    }
+
+    /* per-card animation delays removed since entrance animation is disabled */
+
+    .team-grid > div:hover {
+        animation: hoverLift 0.4s ease-out forwards;
+        box-shadow: 0 25px 50px rgba(99, 102, 241, 0.3) !important;
+    }
+
+    .team-grid > div:hover img {
+        animation: imagePulse 0.6s ease-in-out;
+    }
+</style>
+<section class="hero animate-up">
+    <div class="container">
+        <h1>Our <span style="color: var(--primary);">Mission</span></h1>
+        <p>Moodify was born from a simple idea: music is the language of emotions. Why should you have to search for
+            songs when your face already tells the story?</p>
+    </div>
+</section>
+
+<section style="padding: 5rem 0;">
+    <div class="container">
+<section style="padding: 2rem 0;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+            <div>
+                <h2 style="margin-bottom: 2rem; font-size: 2.5rem;">The <span
+                        style="color: var(--secondary);">Technology</span></h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.8;">
+                    At its core, Moodify utilizes **Convolutional Neural Networks (CNNs)**—a specialized type of Artificial Intelligence designed to process visual data. Our model has been trained on over **25,000 unique facial expressions** to achieve human-level accuracy in emotion detection.
+                </p>
+                <div class="glass" style="padding: 1.5rem; border-left: 4px solid var(--primary); font-style: italic; color: var(--text-main);">
+                    "Music is the shorthand of emotion. We use technology to read that shorthand."
+                </div>
+            </div>
+            <div class="glass"
+                style="padding: 2rem; height: 350px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                <i class="fas fa-brain" style="font-size: 10rem; color: var(--primary); opacity: 0.1; position: absolute;"></i>
+                <div style="text-align: center; z-index: 1;">
+                    <i class="fas fa-microchip" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1.5rem;"></i>
+                    <h3 style="color: var(--text-main);">Neural Engine</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time inference <br> &lt; 100ms latency</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it Works Section -->
+<section style="padding: 5rem 0; background: rgba(99, 102, 241, 0.03);">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">How it <span style="color: var(--primary);">Works</span></h2>
+            <p style="color: var(--text-muted);">Three simple steps to your perfect playlist.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem;">
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; font-size: 1.5rem; font-weight: 800; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);">1</div>
+                <h3 style="margin-bottom: 1rem;">Biometric Scan</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">Our system captures localized facial landmarks, focusing on the eyes, forehead, and mouth to map muscle contractions.</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; background: var(--secondary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; font-size: 1.5rem; font-weight: 800; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);">2</div>
+                <h3 style="margin-bottom: 1rem;">Emotional Mapping</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">AI classifies the input into seven primary emotions: Happy, Sad, Angry, Neutral, Surprise, Fear, or Disgust.</p>
+            </div>
+
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; font-size: 1.5rem; font-weight: 800; box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3);">3</div>
+                <h3 style="margin-bottom: 1rem;">Vibe Generation</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">The detected mood is cross-referenced with musical tempo (BPM), key, and acousticness to deliver the ultimate song match.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Psychology Section -->
+<section style="padding: 5rem 0;">
+    <div class="container">
+        <div class="glass" style="padding: 4rem; display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem; align-items: center; border-radius: 3rem;">
+            <div>
+                <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem;">The <span style="color: var(--accent);">Psychology</span> of Sound</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem;">
+                    Research shows that music affects the limbic system of the brain, the same area responsible for emotional processing. By matching the **rhythmic structure** of a song to your **current physiological state**, Moodify doesn't just play music—it creates an emotional resonance.
+                </p>
+                <div style="display: flex; gap: 2rem;">
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">92%</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">Mood Accuracy</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">10k+</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">Songs Curated</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <i class="fas fa-compact-disc fa-spin" style="font-size: 12rem; color: var(--primary); opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Privacy Section -->
+<section style="padding: 5rem 0; margin-bottom: 5rem;">
+    <div class="container" style="text-align: center; max-width: 800px;">
+        <i class="fas fa-shield-alt" style="font-size: 4rem; color: #10b981; margin-bottom: 2rem;"></i>
+        <h2 style="margin-bottom: 1.5rem;">Your Privacy, Our <span style="color: #10b981;">Priority</span></h2>
+        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">
+            We believe your biometric data is your own. Moodify processes all facial data in local memory; **images are never saved on our servers** and are discarded immediately after analysis. Your privacy is baked into our code.
+        </p>
+    </div>
+</section>
+    </div>
+</section>
+{% endblock %}

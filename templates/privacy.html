@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - Moodify{% endblock %}
+
+{% block content %}
+<section class="hero animate-up" style="padding: 4rem 0;">
+    <div class="container">
+        <h1>Privacy <span style="color: var(--primary);">Policy</span></h1>
+        <p>Last updated: March 2026</p>
+    </div>
+</section>
+
+<section style="padding: 2rem 0 6rem;">
+    <div class="container">
+        <div class="glass" style="padding: 4rem; max-width: 900px; margin: 0 auto; line-height: 1.8;">
+            <div style="margin-bottom: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--text-main);">1. Information We Collect</h2>
+                <p style="color: var(--text-muted);">We collect information to provide better services to all our users. This includes:</p>
+                <ul style="color: var(--text-muted); padding-left: 1.5rem; margin-top: 1rem;">
+                    <li><strong>Account Information:</strong> Name, email address, and password when you register.</li>
+                    <li><strong>Preferences:</strong> Your favorite artists and language settings.</li>
+                    <li><strong>Usage Data:</strong> Number of mood scans performed (total count only).</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 3rem; padding: 2rem; background: rgba(16, 185, 129, 0.05); border-radius: 1rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <h2 style="margin-bottom: 1.5rem; color: #10b981;"><i class="fas fa-shield-alt" style="margin-right: 0.75rem;"></i>2. Biometric Data (Facial Expressions)</h2>
+                <p style="color: var(--text-muted);">Our "Mood Detection" feature requires access to your camera. <strong>We do not store your images or videos on our servers.</strong> All facial analysis happens in real-time within your active session memory and is discarded immediately after the mood is detected. We only store the resulting "mood label" (e.g., "Happy") to provide recommendations.</p>
+            </div>
+
+            <div style="margin-bottom: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--text-main);">3. Use of Cookies</h2>
+                <p style="color: var(--text-muted);">We use cookies to keep you logged in and remember your theme preferences (Light/Dark mode). You can disable cookies in your browser settings, but some features of Moodify may not function correctly.</p>
+            </div>
+
+            <div style="margin-bottom: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--text-main);">4. Data Security</h2>
+                <p style="color: var(--text-muted);">We use industry-standard encryption and security measures to protect your personal information. Passwords are hashed using Bcrypt before being stored in our database.</p>
+            </div>
+
+            <div style="margin-bottom: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--text-main);">5. Contact Us</h2>
+                <p style="color: var(--text-muted);">If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@moodify.com" style="color: var(--primary);">privacy@moodify.com</a> or via our <a href="/contact" style="color: var(--secondary);">Contact Page</a>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

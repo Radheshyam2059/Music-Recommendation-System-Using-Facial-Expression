@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Mood Selection - Moodify{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes iconBounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+
+    .mood-left {
+        animation: fadeInLeft 0.8s ease-out;
+    }
+
+    .mood-right {
+        animation: fadeInRight 0.8s ease-out;
+    }
+
+    .mood-left h1 {
+        animation: fadeInLeft 0.8s ease-out;
+    }
+
+    .mood-left p {
+        animation: fadeInLeft 0.8s ease-out 0.1s both;
+    }
+
+    .icon-box {
+        animation: iconBounce 2s infinite;
+    }
+
+    .icon-box:nth-child(1) {
+        animation-delay: 0s;
+    }
+    .icon-box:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    .icon-box:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    .radio-card {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .radio-card:hover {
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+    }
+
+    button {
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
+    }
+</style>
+<section class="animate-up" style="min-height: 80vh; display: flex; align-items: center; padding: 4rem 0;">
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: center;">
+        <!-- Left Side: Immersive Content -->
+        <div class="mood-left">
+            <h1 style="font-size: 4rem; font-weight: 900; line-height: 1.1; margin-bottom: 2rem;">
+                Set your <span style="color: var(--primary);">Musical</span> <br>Vibe.
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.6;">
+                Choose your preferred language and artist. Our AI will then map your current facial expression to the
+                perfect track from that culture.
+            </p>
+
+            <div style="display: flex; gap: 2rem; color: var(--text-muted);">
+                <div style="text-align: center;" class="icon-box">
+                    <i class="fas fa-globe-asia"
+                        style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent);"></i>
+                    <div style="font-size: 0.8rem;">Multi-Cultural</div>
+                </div>
+                <div style="text-align: center;" class="icon-box">
+                    <i class="fas fa-magic"
+                        style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--secondary);"></i>
+                    <div style="font-size: 0.8rem;">AI Powered</div>
+                </div>
+                <div style="text-align: center;" class="icon-box">
+                    <i class="fas fa-bolt" style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);"></i>
+                    <div style="font-size: 0.8rem;">Instant Play</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Selection Card -->
+        <div class="glass mood-right" style="padding: 3.5rem;">
+            <div style="margin-bottom: 2.5rem; text-align: center;">
+                <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Select Language</h2>
+                <div style="height: 3px; width: 50px; background: var(--primary); margin: 0 auto; border-radius: 2px;">
+                </div>
+            </div>
+
+            <form action="{{url_for('choose_singer')}}" method="POST">
+                <div class="radio-group"
+                    style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 0 0 2.5rem 0;">
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="hindi" checked>
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-music"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--primary);"></i>
+                            <div style="font-weight: 600;">Hindi</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="english">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-microphone"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--secondary);"></i>
+                            <div style="font-weight: 600;">English</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="punjabi">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-drum"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--accent);"></i>
+                            <div style="font-weight: 600;">Punjabi</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="telugu">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-guitar"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: #FF6B35;"></i>
+                            <div style="font-weight: 600;">Telugu</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="tamil">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-headphones"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: #F72585;"></i>
+                            <div style="font-weight: 600;">Tamil</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="malayalam">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-compact-disc"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: #4ECDC4;"></i>
+                            <div style="font-weight: 600;">Malayalam</div>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="language" value="others">
+                        <div class="card-content" style="padding: 1.5rem;">
+                            <i class="fas fa-ellipsis-h"
+                                style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--text-muted);"></i>
+                            <div style="font-weight: 600;">Others</div>
+                        </div>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg"
+                    style="width: 100%; font-size: 1.1rem; padding: 1.1rem; border-radius: 0.75rem;">
+                    Continue to Singers <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    @media (max-width: 968px) {
+        .container {
+            grid-template-columns: 1fr !important;
+            gap: 3rem !important;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Moodify - Facial Music Recommendation{% endblock %}</title>
+    
+    <!-- Theme Check Script (Prevents Flashing) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <header>
+        <div class="container nav">
+            <a href="/" class="logo">MOODIFY</a>
+
+            <ul class="nav-links" id="nav-menu">
+                <li><a href="/mood">Mood</a></li>
+                <li><a href="/features">Features</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/team">Team</a></li>
+                <li><a href="/contact">Contact</a></li>
+                
+                {% if current_user.is_authenticated %}
+                <li>
+                    <a href="/profile" class="btn btn-outline"
+                        style="padding: 0; border: none; border-radius: 50%; width: 45px; height: 45px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg-card);">
+                        {% if current_user.profile_pic %}
+                        <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" alt="User"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <div
+                            style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.1);">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+                </li>
+                {% else %}
+                <li><a href="/login">Login</a></li>
+                <li><a href="/signup" class="btn btn-primary" style="padding: 0.4rem 1.2rem;">Get Started</a></li>
+                {% endif %}
+
+            </ul>
+
+            <button class="menu-toggle" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container footer-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; padding: 1.5rem 0;">
+            <div class="footer-section">
+                <a href="/" class="logo" style="margin-bottom: 0.75rem; display: block;">MOODIFY</a>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; max-width: 320px;">AI-powered music discovery that understands how you feel. Scan your face, find your vibe, and let the music speak your truth.</p>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.75rem; font-size: 1.1rem;">
+                    <a href="https://github.com/Radheshyam2059" target="_blank" style="color: var(--text-muted); transition: color 0.3s;"><i class="fab fa-github"></i></a>
+                    <a href="https://x.com/RThakur4500" target="_blank" style="color: var(--text-muted); transition: color 0.3s;"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.linkedin.com/in/radheshyam-thakur-2b5752253" target="_blank" style="color: var(--text-muted); transition: color 0.3s;"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main);">Discovery</h3>
+                <ul style="list-style: none; color: var(--text-muted); line-height: 1.8; font-size: 0.85rem;">
+                    <li><a href="/mood" style="color: inherit; text-decoration: none;">Mood Explorer</a></li>
+                    <li><a href="/features" style="color: inherit; text-decoration: none;">Features</a></li>
+                    <li><a href="/team" style="color: inherit; text-decoration: none;">Our Team</a></li>
+                    <li><a href="/about" style="color: inherit; text-decoration: none;">The Science</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main);">Support</h3>
+                <ul style="list-style: none; color: var(--text-muted); line-height: 1.8; font-size: 0.85rem;">
+                    <li><a href="/contact" style="color: inherit; text-decoration: none;">Help Center</a></li>
+                    <li><a href="/privacy" style="color: inherit; text-decoration: none;">Privacy Policy</a></li>
+                    <li><a href="/terms" style="color: inherit; text-decoration: none;">Terms of Use</a></li>
+                    <li><a href="/contact" style="color: inherit; text-decoration: none;">Report Bug</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-main);">Newsletter</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Get weekly mood-mixed playlists delivered to your inbox.</p>
+                <form style="display: flex; gap: 0.5rem;" onsubmit="event.preventDefault(); alert('Subscribed!')">
+                    <input type="email" placeholder="Email" required style="flex: 1; padding: 0.4rem; border-radius: 0.4rem; background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main); font-size: 0.85rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.4rem; width: 35px;"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom" style="margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border); text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 0.25rem;">
+                <span><i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: var(--primary);"></i><span id="footer-location">Surampalem, AP</span></span>
+                <span><i class="fas fa-envelope" style="margin-right: 0.5rem; color: var(--secondary);"></i>moodify@contact.com</span>
+            </div>
+            &copy; 2026 Moodify. All rights reserved.
+        </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Floating Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle floating-theme-toggle" title="Toggle Light/Dark Mode">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <script>
+        // Dynamic Location Detection
+        async function updateLocation() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.city && data.region_code) {
+                    document.getElementById('footer-location').textContent = `${data.city}, ${data.region_code}`;
+                }
+            } catch (error) {
+                console.log('Location detection failed:', error);
+            }
+        }
+        updateLocation();
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenuBtn && navMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+
+                // Animate hamburger to X
+                const spans = mobileMenuBtn.querySelectorAll('span');
+                if (navMenu.classList.contains('active')) {
+                    spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                    spans[1].style.opacity = '0';
+                    spans[2].style.transform = 'rotate(-45deg) translate(7px, -7px)';
+                } else {
+                    spans[0].style.transform = 'none';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'none';
+                }
+            });
+        }
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+    </script>
+
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/6979a5da3f0a47198127d028/1jg1ivnsb';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
+</body>
+
+</html>

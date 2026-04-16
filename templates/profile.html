@@ -1,0 +1,801 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Moodify{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 4rem;
+        min-height: 85vh;
+        align-items: center;
+    }
+
+    .profile-sidebar {
+        background: var(--bg-card);
+        backdrop-filter: blur(12px);
+        padding: 3rem 2rem;
+        text-align: center;
+        border-radius: 2rem;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow);
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        background: var(--primary);
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: white;
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+        border: 4px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-content {
+        background: var(--bg-card);
+        backdrop-filter: blur(12px);
+        border-radius: 2rem;
+        border: 1px solid var(--glass-border);
+        padding: 3rem;
+        box-shadow: var(--shadow);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .search-results {
+        position: absolute;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        z-index: 10;
+        display: none;
+        box-shadow: var(--shadow);
+    }
+
+    .search-item {
+        padding: 0.8rem 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .search-item:hover {
+        background: var(--primary);
+    }
+
+    .readonly-field {
+        background: rgba(0, 0, 0, 0.2) !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .popup-overlay.show {
+        display: flex;
+    }
+
+    .popup-box {
+        background: var(--bg-card);
+        border: 2px solid var(--glass-border);
+        border-radius: 1.5rem;
+        padding: 3rem;
+        text-align: center;
+        min-width: 400px;
+        box-shadow: var(--shadow);
+        animation: slideInUp 0.3s ease-out;
+    }
+
+    .popup-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        animation: spin 2s infinite linear;
+    }
+
+    .popup-icon.success {
+        animation: none;
+        color: #10b981;
+    }
+
+    .popup-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .popup-btn {
+        padding: 0.8rem 2rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .popup-btn-delete {
+        background: #dc2626;
+        color: white;
+    }
+
+    .popup-btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+    }
+
+    .popup-btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid var(--glass-border);
+    }
+
+    .popup-btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .popup-input {
+        width: 100%;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0.75rem;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        font-size: 1rem;
+        text-align: center;
+        letter-spacing: 0.1em;
+    }
+
+    .popup-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Success Modal Styles */
+    .success-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-modal-overlay.show {
+        display: flex;
+        animation: fadeInBg 0.3s ease-out;
+    }
+
+    .success-modal-box {
+        background: var(--bg-card);
+        border: 2px solid var(--glass-border);
+        border-radius: 2rem;
+        padding: 3rem;
+        text-align: center;
+        min-width: 400px;
+        box-shadow: var(--shadow);
+        animation: modalScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .success-modal-icon {
+        font-size: 3.5rem;
+        color: #10b981;
+        margin-bottom: 1.5rem;
+        animation: iconBounceIn 0.6s ease-out;
+    }
+
+    .success-modal-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 1rem;
+    }
+
+    .success-modal-message {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .success-modal-loading {
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        border-radius: 1px;
+        margin-top: 1.5rem;
+        animation: barFill 1.5s ease-out;
+    }
+
+    @keyframes fadeInBg {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes modalScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes iconBounceIn {
+        0% { transform: scale(0) rotateZ(-180deg); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes barFill {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 968px) {
+        .profile-container {
+            grid-template-columns: 1fr;
+            padding: 2rem 0;
+        }
+        .popup-box {
+            min-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="animate-up">
+    <div class="container profile-container">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar" style="position: relative; overflow: hidden; padding: 0;">
+                {% if user.profile_pic %}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" alt="Profile"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <i class="fas fa-user-astronaut"></i>
+                {% endif %}
+
+                <form action="/profile" method="POST" enctype="multipart/form-data" id="avatarForm"
+                    style="position: absolute; bottom: 0; width: 100%;">
+                    <label for="profile_pic"
+                        style="cursor: pointer; display: block; background: rgba(0,0,0,0.6); padding: 0.5rem; color: white; margin: 0; font-size: 0.9rem;">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" name="profile_pic" id="profile_pic" style="display: none;"
+                        onchange="document.getElementById('avatarForm').submit();" accept="image/*">
+                </form>
+            </div>
+            <h1 style="margin-bottom: 0.5rem; font-size: 2rem;">{{ user.name }}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Member since {% if user.created_at %}{{ user.created_at[:4] }}{% else %}{{ current_year }}{% endif %}</p>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
+                <div style="text-align: center;">
+                    <h3 style="margin: 0; color: var(--secondary);">{{ user.scans if user.scans else 0 }}</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Scans</span>
+                </div>
+                <div style="text-align: center;">
+                    <h3 style="margin: 0; color: var(--primary);">{{ user.preferences.language|capitalize if
+                        user.preferences and user.preferences.language else '-' }}</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Language</span>
+                </div>
+            </div>
+
+            <a href="/logout" class="btn btn-outline"
+                style="width: 100%; border-color: #ef4444; color: #ef4444; padding: 1rem; margin-bottom: 1rem;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            
+            <button type="button" onclick="deleteAccount()" class="btn btn-outline"
+                style="width: 100%; border-color: #dc2626; color: #dc2626; padding: 1rem; background: rgba(220, 38, 38, 0.1);">
+                <i class="fas fa-trash-alt"></i> Delete Account
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="profile-content">
+            <form action="/profile" method="POST" onsubmit="showSaveModal(event)">
+
+                <!-- Section 1 -->
+                <div class="section-header">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <h3 style="margin: 0;">Account Details</h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Full
+                            Name</label>
+                        <input type="text" name="name" value="{{ user.name }}" required
+                            style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Email
+                            Address</label>
+                        <div style="position: relative;">
+                            <input type="email" value="{{ user.email or '' }}" readonly class="readonly-field"
+                                style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-muted);">
+                            <i class="fas fa-lock"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        </div>
+                        <small style="color: var(--text-muted); font-size: 0.8rem;">Email cannot be changed
+                            directly.</small>
+                    </div>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="section-header">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(168, 85, 247, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <h3 style="margin: 0;">Preferences</h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Preferred
+                            Language</label>
+                        <select name="language"
+                            style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main); cursor: pointer;">
+                            <option value="" disabled {% if not user.preferences or not user.preferences.language
+                                %}selected{% endif %}>Select Language</option>
+                            <option value="english" {% if user.preferences and user.preferences.language=='english'
+                                %}selected{% endif %}>English</option>
+                            <option value="hindi" {% if user.preferences and user.preferences.language=='hindi'
+                                %}selected{% endif %}>Hindi</option>
+                            <option value="punjabi" {% if user.preferences and user.preferences.language=='punjabi'
+                                %}selected{% endif %}>Punjabi</option>
+                            <option value="telugu" {% if user.preferences and user.preferences.language=='telugu'
+                                %}selected{% endif %}>Telugu</option>
+                            <option value="tamil" {% if user.preferences and user.preferences.language=='tamil'
+                                %}selected{% endif %}>Tamil</option>
+                            <option value="malayalam" {% if user.preferences and user.preferences.language=='malayalam'
+                                %}selected{% endif %}>Malayalam</option>
+                            <option value="others" {% if user.preferences and user.preferences.language=='others'
+                                %}selected{% endif %}>Others</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="position: relative;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Favorite
+                            Artist</label>
+                        <input type="text" id="singerInput" name="singer"
+                            value="{{ user.preferences.singer if user.preferences and user.preferences.singer else '' }}"
+                            placeholder="Search artist..." autocomplete="off"
+                            style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);">
+                        <i class="fas fa-search"
+                            style="position: absolute; right: 1rem; bottom: 1.1rem; color: var(--text-muted);"></i>
+
+                        <!-- Search Dropdown -->
+                        <div id="singerResults" class="search-results">
+                            <!-- Items populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Change Password -->
+                <div class="section-header" style="margin-top: 3rem;">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3 style="margin: 0;">Change Password</h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Current
+                            Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="currentPassword" name="current_password"
+                                style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);">
+                            <button type="button" onclick="togglePasswordVisibility('currentPassword')"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">New
+                            Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="newPassword" name="new_password"
+                                style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);">
+                            <button type="button" onclick="togglePasswordVisibility('newPassword')"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Confirm
+                            New Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="confirmPassword" name="confirm_password"
+                                style="width: 100%; padding: 1rem; border-radius: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);">
+                            <button type="button" onclick="togglePasswordVisibility('confirmPassword')"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" onclick="changePassword()"
+                        style="background: linear-gradient(135deg, #ef4444, #f97316); color: white; padding: 1rem; border-radius: 0.75rem; border: none; cursor: pointer; font-weight: 600; margin-top: 1rem;">
+                        <i class="fas fa-lock"></i> Update Password
+                    </button>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg"
+                    style="margin-top: 2rem; width: 100%; padding: 1.2rem; border-radius: 1rem;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Account Modals -->
+<div id="deletePopup" class="popup-overlay">
+    <div class="popup-box">
+        <div id="popupIcon" class="popup-icon">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 id="popupTitle" style="margin: 1rem 0; font-size: 1.3rem; color: #dc2626;">Delete Account?</h3>
+        <p id="popupMessage" style="color: var(--text-muted); margin: 1rem 0; line-height: 1.6;">
+            Are you sure you want to delete your account? This action <strong style="color: #ff6b6b;">cannot be undone</strong>.<br><br>
+            All your data, preferences, and profile will be <strong style="color: #ff6b6b;">permanently deleted</strong>.
+        </p>
+        <div class="popup-buttons">
+            <button class="popup-btn popup-btn-cancel" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button class="popup-btn popup-btn-delete" onclick="showDeleteConfirmModal()">
+                <i class="fas fa-trash-alt"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal - Update Password -->
+<div id="passwordSuccessModal" class="success-modal-overlay">
+    <div class="success-modal-box">
+        <div class="success-modal-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h3 class="success-modal-title">Password Updated!</h3>
+        <p class="success-modal-message">Your password has been changed successfully.</p>
+        <div class="success-modal-loading"></div>
+    </div>
+</div>
+
+<!-- Success Modal - Save Changes -->
+<div id="saveSuccessModal" class="success-modal-overlay">
+    <div class="success-modal-box">
+        <div class="success-modal-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <h3 class="success-modal-title">Changes Saved!</h3>
+        <p class="success-modal-message">Your profile has been updated successfully.</p>
+        <div class="success-modal-loading"></div>
+    </div>
+</div>
+
+<!-- Confirm Deletion Modal -->
+<div id="confirmDeletePopup" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon" style="color: #dc2626;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="margin: 1rem 0; font-size: 1.3rem; color: #dc2626;">Final Confirmation</h3>
+        <p style="color: var(--text-muted); margin: 1rem 0;">
+            Type <strong style="color: var(--primary);">DELETE</strong> to confirm permanent account deletion.
+        </p>
+        <input type="text" id="deleteConfirmInput" class="popup-input" placeholder="Type DELETE here" maxlength="6">
+        <div class="popup-buttons">
+            <button class="popup-btn popup-btn-cancel" onclick="closeConfirmModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button class="popup-btn popup-btn-delete" onclick="proceedWithDeletion()">
+                <i class="fas fa-check"></i> Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Modal -->
+<div id="processingPopup" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon">
+            <i class="fas fa-spinner"></i>
+        </div>
+        <h3 style="margin: 1rem 0; font-size: 1.3rem;">Deleting Account...</h3>
+        <p style="color: var(--text-muted);">Please wait while we securely delete your account and all data.</p>
+    </div>
+</div>
+
+<!-- Data for search -->
+<script>
+    const singersDB = [
+        "Sidhu Moosewala", "Amrinder Gill", "Karan Aujla", "Diljit Dosanjh", "Guru Randhawa", "Jassie Gill",
+        "Taylor Swift", "Travis Scott", "Playboi Carti", "Drake", "The Weeknd", "Justin Bieber",
+        "Kishore Kumar", "Arijit Singh", "Amit Trivedi", "Pritam", "Mohammed Rafi", "KK",
+        "Badshah", "Honey Singh", "Divine", "Raftaar", "Shreya Ghoshal", "Sonu Nigam", "Lata Mangeshkar",
+        "Eminem", "Post Malone", "Ariana Grande", "Ed Sheeran", "Harry Styles", "Dua Lipa",
+        "AP Dhillon", "Shubh", "Dilpreet Dhillon", "Jordan Sandhu", "Nimrat Khaira", "Garry Sandhu",
+        "SZA", "Rihanna", "Beyonce", "Adele", "Bruno Mars", "Coldplay",
+        "Atif Aslam", "Rahat Fateh Ali Khan", "Himesh Reshammiya", "Mika Singh", "Sunidhi Chauhan",
+        "Lana Del Rey", "Billie Eilish", "Olivia Rodrigo", "Doja Cat", "Kendrick Lamar", "J. Cole"
+    ];
+
+    const singerInput = document.getElementById('singerInput');
+    const resultsBox = document.getElementById('singerResults');
+
+    singerInput.addEventListener('input', function () {
+        const val = this.value.toLowerCase();
+        resultsBox.innerHTML = '';
+
+        if (!val) {
+            resultsBox.style.display = 'none';
+            return;
+        }
+
+        const matches = singersDB.filter(s => s.toLowerCase().includes(val));
+
+        if (matches.length > 0) {
+            matches.forEach(singer => {
+                const div = document.createElement('div');
+                div.className = 'search-item';
+                div.textContent = singer;
+                div.onclick = function () {
+                    singerInput.value = singer;
+                    resultsBox.style.display = 'none';
+                };
+                resultsBox.appendChild(div);
+            });
+            resultsBox.style.display = 'block';
+        } else {
+            resultsBox.style.display = 'none';
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        if (e.target !== singerInput) {
+            resultsBox.style.display = 'none';
+        }
+    });
+
+    // Toggle password visibility
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = event.target.closest('button').querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Change password function
+    function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!currentPassword) {
+            alert('Please enter your current password');
+            return;
+        }
+
+        if (!newPassword) {
+            alert('Please enter a new password');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert('New password must be at least 6 characters long');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        if (currentPassword === newPassword) {
+            alert('New password must be different from current password');
+            return;
+        }
+
+        // Send password change request
+        fetch('/change_password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success modal
+                const modal = document.getElementById('passwordSuccessModal');
+                modal.classList.add('show');
+                
+                // Clear inputs
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                
+                // Auto close after 1.5 seconds
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                }, 1500);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error changing password: ' + error);
+        });
+    }
+
+    // Delete account function
+    function deleteAccount() {
+        const popup = document.getElementById('deletePopup');
+        popup.classList.add('show');
+    }
+
+    function closeDeleteModal() {
+        const popup = document.getElementById('deletePopup');
+        popup.classList.remove('show');
+    }
+
+    function showDeleteConfirmModal() {
+        document.getElementById('deletePopup').classList.remove('show');
+        document.getElementById('confirmDeletePopup').classList.add('show');
+        document.getElementById('deleteConfirmInput').focus();
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmDeletePopup').classList.remove('show');
+    }
+
+    function proceedWithDeletion() {
+        const input = document.getElementById('deleteConfirmInput');
+        
+        if (input.value !== 'DELETE') {
+            alert('Please type "DELETE" exactly to confirm.');
+            return;
+        }
+
+        // Close confirm modal and show processing
+        document.getElementById('confirmDeletePopup').classList.remove('show');
+        document.getElementById('processingPopup').classList.add('show');
+
+        // Send delete request
+        fetch('/delete_account', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update processing modal to success
+                const processingPopup = document.getElementById('processingPopup');
+                const popupBox = processingPopup.querySelector('.popup-box');
+                
+                popupBox.innerHTML = `
+                    <div class="popup-icon success" style="color: #10b981;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="margin: 1rem 0; font-size: 1.3rem; color: #10b981;">Account Deleted!</h3>
+                    <p style="color: var(--text-muted); margin: 1rem 0;">Your account has been permanently deleted.<br>Redirecting...</p>
+                `;
+                
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/logout';
+                }, 2000);
+            } else {
+                document.getElementById('processingPopup').classList.remove('show');
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            document.getElementById('processingPopup').classList.remove('show');
+            alert('Error deleting account: ' + error);
+        });
+    }
+
+    // Close modals on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('deletePopup').classList.remove('show');
+            document.getElementById('confirmDeletePopup').classList.remove('show');
+        }
+    });
+
+    // Allow typing DELETE to activate confirm button
+    document.getElementById('deleteConfirmInput').addEventListener('input', function() {
+        const btn = this.parentElement.querySelector('.popup-btn-delete');
+        btn.style.opacity = this.value === 'DELETE' ? '1' : '0.5';
+        btn.style.pointerEvents = this.value === 'DELETE' ? 'auto' : 'none';
+    });
+
+    // Show save modal for profile changes
+    function showSaveModal(e) {
+        e.preventDefault();
+        const modal = document.getElementById('saveSuccessModal');
+        modal.classList.add('show');
+        
+        // Submit form after showing modal
+        setTimeout(() => {
+            e.target.submit();
+        }, 1500);
+    }
+</script>
+{% endblock %}

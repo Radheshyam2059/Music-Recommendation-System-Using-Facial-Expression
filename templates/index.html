@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Moodify - Future of Music Recommendation{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Advanced Design -->
+<section class="hero animate-up" style="padding: 8rem 2rem 5rem; position: relative; overflow: hidden;">
+	<!-- Animated Background Elements -->
+	<div style="position: absolute; top: -200px; right: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); border-radius: 50%; animation: float 8s ease-in-out infinite;"></div>
+	<div style="position: absolute; bottom: -150px; left: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%); border-radius: 50%; animation: float 10s ease-in-out infinite reverse;"></div>
+
+	<div class="container" style="position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+		<!-- Left Content -->
+		<div>
+			<!-- Premium Badge -->
+			<div style="display: inline-block; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 50px; padding: 0.8rem 1.5rem; margin-bottom: 2rem; font-size: 0.9rem; color: var(--primary); font-weight: 600;">
+				<i class="fas fa-star"></i> AI-Powered Music Discovery
+			</div>
+
+			<!-- Main Heading with Gradient -->
+			<h1 style="font-size: 4.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem;">
+				Music That <br><span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Reads You</span>
+			</h1>
+
+			<!-- Subheading -->
+			<p style="font-size: 1.2rem; margin-bottom: 2.5rem; color: var(--text-muted); line-height: 1.8; max-width: 550px;">
+				Moodify uses cutting-edge AI to understand your emotions through facial expressions. Discover personalized music recommendations that match your mood instantly.
+			</p>
+
+			<!-- CTA Buttons -->
+			<div style="display: flex; gap: 1.5rem; margin-bottom: 3rem;">
+				<a href="/mood" class="btn btn-primary btn-lg" style="padding: 1rem 2.5rem; font-size: 1rem; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.7rem;">
+					<i class="fas fa-play-circle"></i> Start Scanning
+				</a>
+				<a href="/about" class="btn btn-outline btn-lg" style="padding: 1rem 2.5rem; font-size: 1rem; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.7rem;">
+					<i class="fas fa-book-open"></i> Learn More
+				</a>
+			</div>
+
+			<!-- Stats Row -->
+			<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+				<div>
+					<div style="font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 0.5rem;">98.5%</div>
+					<p style="color: var(--text-muted); font-size: 0.85rem;">Detection Accuracy</p>
+				</div>
+				<div>
+					<div style="font-size: 2rem; font-weight: 900; color: var(--secondary); margin-bottom: 0.5rem;">6</div>
+					<p style="color: var(--text-muted); font-size: 0.85rem;">Emotions Detected</p>
+				</div>
+				<div>
+					<div style="font-size: 2rem; font-weight: 900; color: var(--accent); margin-bottom: 0.5rem;">1M+</div>
+					<p style="color: var(--text-muted); font-size: 0.85rem;">Curated Tracks</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Right - Advanced Hero Image -->
+		<div style="position: relative; height: 550px;">
+			<!-- Main Glass Card -->
+			<div class="glass" style="padding: 1.5rem; position: relative; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 2.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08)); border: 1px solid rgba(99, 102, 241, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);">
+				<img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="AI Processing" style="width: 100%; height: 100%; object-fit: cover; border-radius: 2rem; opacity: 0.5; filter: hue-rotate(220deg) brightness(0.8);">
+
+				<!-- Scanning Line Animation -->
+				<div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 30px var(--accent); animation: scan-move 4s linear infinite; z-index: 10;"></div>
+
+				<!-- Status Badge -->
+				<div style="position: absolute; top: 2rem; left: 2rem; color: var(--accent); font-family: 'Courier New', monospace; font-size: 0.8rem; background: var(--bg-card); padding: 0.75rem 1.25rem; border-radius: 50px; border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); animation: pulse-glow 2s ease-in-out infinite; font-weight: 600;">
+					● LIVE_SCAN: ACTIVE
+				</div>
+
+				<!-- Processing Status -->
+				<div style="position: absolute; bottom: 2rem; right: 2rem; background: var(--bg-card); padding: 1.25rem 1.75rem; border-radius: 1.25rem; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+					<div style="color: var(--primary); font-family: 'Courier New', monospace; font-size: 0.8rem; margin-bottom: 0.75rem; font-weight: 700;">DECODING_EMOTIONS</div>
+					<div style="height: 4px; width: 150px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden;">
+						<div style="height: 100%; width: 75%; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)); border-radius: 2px; animation: progress-bar 2s infinite alternate;"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Floating Feature Cards -->
+			<div style="position: absolute; top: -40px; left: -60px; background: var(--bg-card); border: 1px solid var(--primary); padding: 1.25rem 1.75rem; border-radius: 1.25rem; max-width: 200px; box-shadow: 0 15px 40px rgba(99, 102, 241, 0.25); animation: float 5s ease-in-out infinite; backdrop-filter: blur(10px);">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: var(--primary); font-weight: 600;">
+					<i class="fas fa-check-circle"></i> Face Detection
+				</div>
+				<p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">Real-time facial landmarks</p>
+			</div>
+
+			<div style="position: absolute; bottom: -30px; right: -80px; background: var(--bg-card); border: 1px solid var(--secondary); padding: 1.25rem 1.75rem; border-radius: 1.25rem; max-width: 200px; box-shadow: 0 15px 40px rgba(168, 85, 247, 0.25); animation: float 6s ease-in-out infinite reverse; backdrop-filter: blur(10px);">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: var(--secondary); font-weight: 600;">
+					<i class="fas fa-brain"></i> AI Analysis
+				</div>
+				<p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">Neural network powered</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	@keyframes float {
+		0%, 100% { transform: translateY(0px); }
+		50% { transform: translateY(-30px); }
+	}
+
+	@keyframes scan-move {
+		0% { top: -2%; }
+		50% { top: 100%; }
+		100% { top: -2%; }
+	}
+
+	@keyframes pulse-glow {
+		0%, 100% { opacity: 1; box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+		50% { opacity: 0.8; box-shadow: 0 0 30px rgba(6, 182, 212, 0.5); }
+	}
+
+	@keyframes progress-bar {
+		from { width: 10%; }
+		to { width: 95%; }
+	}
+
+	@media (max-width: 1024px) {
+		section.hero { padding: 6rem 1rem 4rem; }
+		.container { grid-template-columns: 1fr !important; }
+		h1 { font-size: 3rem !important; }
+	}
+</style>
+
+<!-- Process Section with Advanced Cards -->
+<section style="padding: 8rem 2rem; background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.03));">
+	<div class="container">
+		<div style="text-align: center; margin-bottom: 5rem;">
+			<h2 style="font-size: 3.2rem; margin-bottom: 1rem; font-weight: 900;">How It <span style="background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Works</span></h2>
+			<p style="color: var(--text-muted); font-size: 1.1rem;">Three simple steps to discover music that matches your mood</p>
+		</div>
+
+		<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem;">
+			<!-- Card 1 -->
+			<div class="process-card glass" style="padding: 3rem; position: relative; overflow: hidden; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(99, 102, 241, 0.2); background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);">
+				<div style="position: absolute; top: -30px; right: -30px; font-size: 8rem; opacity: 0.1; font-weight: 900;">01</div>
+				<div style="width: 70px; height: 70px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.05)); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; border: 2px solid rgba(99, 102, 241, 0.3); position: relative;">
+					<i class="fas fa-camera" style="font-size: 1.8rem; color: var(--primary);"></i>
+				</div>
+				<h3 style="font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700;">Facial Capture</h3>
+				<p style="color: var(--text-muted); line-height: 1.7;">Our AI scans your face and detects key facial landmarks with precision using advanced computer vision.</p>
+			</div>
+
+			<!-- Card 2 -->
+			<div class="process-card glass" style="padding: 3rem; position: relative; overflow: hidden; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(168, 85, 247, 0.2); background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), transparent);">
+				<div style="position: absolute; top: -30px; right: -30px; font-size: 8rem; opacity: 0.1; font-weight: 900;">02</div>
+				<div style="width: 70px; height: 70px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.05)); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; border: 2px solid rgba(168, 85, 247, 0.3); position: relative;">
+					<i class="fas fa-brain" style="font-size: 1.8rem; color: var(--secondary);"></i>
+				</div>
+				<h3 style="font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700;">Emotion Analysis</h3>
+				<p style="color: var(--text-muted); line-height: 1.7;">Deep learning models analyze your expressions and identify your emotion with 98.5% accuracy.</p>
+			</div>
+
+			<!-- Card 3 -->
+			<div class="process-card glass" style="padding: 3rem; position: relative; overflow: hidden; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(6, 182, 212, 0.2); background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), transparent);">
+				<div style="position: absolute; top: -30px; right: -30px; font-size: 8rem; opacity: 0.1; font-weight: 900;">03</div>
+				<div style="width: 70px; height: 70px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05)); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; border: 2px solid rgba(6, 182, 212, 0.3); position: relative;">
+					<i class="fas fa-music" style="font-size: 1.8rem; color: var(--accent);"></i>
+				</div>
+				<h3 style="font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700;">Smart Matching</h3>
+				<p style="color: var(--text-muted); line-height: 1.7;">Get instant recommendations from our massive library of curated playlists matching your mood.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.process-card:hover {
+		transform: translateY(-8px);
+		box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15) !important;
+	}
+</style>
+
+<!-- Emotion Recognition Section -->
+<section style="padding: 8rem 2rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);">
+	<div class="container">
+		<div style="text-align: center; margin-bottom: 4rem;">
+			<h2 style="font-size: 3.2rem; margin-bottom: 1rem; font-weight: 900;">Emotion <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Recognition</span></h2>
+			<p style="color: var(--text-muted); font-size: 1.1rem;">Our AI recognizes and responds to 6 core emotional states</p>
+		</div>
+
+		<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5rem;">
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(255, 107, 107, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">😠</div>
+				<h4 style="margin-bottom: 0.5rem; color: #ff6b6b; font-weight: 700;">Angry</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">Rock, Metal</p>
+			</div>
+
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(107, 114, 128, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite 0.2s;">😐</div>
+				<h4 style="margin-bottom: 0.5rem; color: #6b7280; font-weight: 700;">Neutral</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">Pop, Indie</p>
+			</div>
+
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(139, 92, 246, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite 0.4s;">😨</div>
+				<h4 style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 700;">Fear</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">Dark, Ambient</p>
+			</div>
+
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(34, 197, 94, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite 0.6s;">😊</div>
+				<h4 style="margin-bottom: 0.5rem; color: #22c55e; font-weight: 700;">Happy</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">Dance, Pop</p>
+			</div>
+
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite 0.8s;">😢</div>
+				<h4 style="margin-bottom: 0.5rem; color: #3b82f6; font-weight: 700;">Sad</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">Ballad, Blues</p>
+			</div>
+
+			<div class="emotion-card glass" style="padding: 2rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(249, 115, 22, 0.3);">
+				<div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite 1s;">😮</div>
+				<h4 style="margin-bottom: 0.5rem; color: #f97316; font-weight: 700;">Surprise</h4>
+				<p style="color: var(--text-muted); font-size: 0.8rem;">EDM, Upbeat</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.emotion-card {
+		transition: all 0.3s ease;
+	}
+
+	.emotion-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+	}
+</style>
+
+<!-- Call to Action Section -->
+<section style="padding: 10rem 2rem; position: relative; overflow: hidden;">
+	<div style="position: absolute; top: -20%; right: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); border-radius: 50%; animation: float 10s ease-in-out infinite;"></div>
+
+	<div class="container" style="position: relative; z-index: 2;">
+		<div class="glass" style="padding: 6rem 4rem; text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1)); border: 2px solid var(--primary); position: relative; overflow: hidden;">
+			<!-- Top border accent -->
+			<div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);"></div>
+
+			<h2 style="font-size: 3.5rem; margin-bottom: 1.5rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, var(--primary) 50%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Ready to Discover Your Sound?</h2>
+
+			<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.8;">
+				Join thousands of users experiencing the future of music discovery. Let your emotions guide your playlist.
+			</p>
+
+			<div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+				<a href="/mood" class="btn btn-primary btn-lg" style="padding: 1.2rem 3.5rem; font-size: 1rem; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3); display: inline-flex; align-items: center; gap: 0.7rem;">
+					<i class="fas fa-magic"></i> Get Started Now
+				</a>
+				<a href="/features" class="btn btn-outline btn-lg" style="padding: 1.2rem 3rem; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.7rem;">
+					<i class="fas fa-star"></i> Explore Features
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1rem;
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.animate-up {
+		animation: slideUp 0.6s ease-out;
+	}
+</style>
+{% endblock %}

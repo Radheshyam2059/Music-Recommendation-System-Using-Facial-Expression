@@ -1,0 +1,657 @@
+{% extends "base.html" %}
+
+{% block title %}Emotion Detection - Moodify{% endblock %}
+
+{% block extra_css %}
+<style>
+	.detection-container {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4rem;
+		min-height: 85vh;
+		align-items: center;
+	}
+
+	.info-panel {
+		padding-right: 2rem;
+	}
+
+	.camera-panel {
+		position: relative;
+		background: var(--bg-card);
+		backdrop-filter: blur(12px);
+		border-radius: 2rem;
+		border: 1px solid var(--glass-border);
+		padding: 2rem;
+		box-shadow: var(--shadow);
+	}
+
+	#video {
+		width: 100%;
+		border-radius: 1.5rem;
+		background: #000;
+		box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+		transform: scaleX(-1);
+		/* Mirror effect */
+	}
+
+	.tab-pills {
+		display: inline-flex;
+		background: var(--bg-dark);
+		padding: 0.5rem;
+		border-radius: 1rem;
+		margin-bottom: 2rem;
+		border: 1px solid var(--glass-border);
+	}
+
+	.tab-pill {
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.75rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		color: var(--text-muted);
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.tab-pill.active {
+		background: var(--primary);
+		color: white;
+		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+	}
+
+	.status-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+		border-radius: 2rem;
+		background: rgba(99, 102, 241, 0.1);
+		color: var(--primary);
+		border: 1px solid rgba(99, 102, 241, 0.2);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	@media (max-width: 968px) {
+		.detection-container {
+			grid-template-columns: 1fr;
+			padding: 2rem 0;
+		}
+
+		.info-panel {
+			padding-right: 0;
+			text-align: center;
+		}
+
+		.tab-pills {
+			justify-content: center;
+		}
+	}
+
+	/* Face error modal overlay inside camera panel */
+	.face-error-modal {
+		display: none;
+		position: absolute;
+		inset: 0; /* cover entire camera-panel area */
+		background: rgba(0,0,0,0.45);
+		backdrop-filter: blur(3px);
+		z-index: 80;
+		align-items: center;
+		justify-content: center;
+		display: none;
+	}
+	.face-error-modal .inner {
+		background: var(--bg-card);
+		padding: 1rem 1.25rem;
+		border-radius: 12px;
+		text-align: center;
+		color: var(--text-main);
+		box-shadow: var(--shadow);
+		max-width: 320px;
+		margin: 0 auto;
+		border: 1px solid var(--glass-border);
+	}
+	.face-error-modal h4 { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
+	.face-error-modal p { margin: 0; color: #fca5a5; }
+	.face-error-modal .close-btn { margin-top: 0.75rem; background: var(--bg-card); border: 1px solid var(--glass-border); padding: 0.45rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--text-main); }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="animate-up">
+	<div class="container detection-container">
+		<!-- Left Side: Instructions & Info -->
+		<div class="info-panel">
+			<div class="status-badge">
+				<i class="fas fa-magic"></i> AI Powered Analysis
+			</div>
+			<h1 style="font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem;">
+				Let's Read Your <br><span style="color: var(--secondary);">Vibe.</span>
+			</h1>
+			<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.6;">
+				Position your face clearly in the frame. Our AI will analyze your micro-expressions to detect your
+				current mood and match it with
+				<strong style="color: var(--text-main);">{{singer}}</strong>'s best tracks.
+			</p>
+
+			<div class="tab-pills">
+				<div class="tab-pill active" onclick="switchTab('camera')">
+					<i class="fas fa-camera"></i> Live Camera
+				</div>
+				<div class="tab-pill" onclick="switchTab('upload')">
+					<i class="fas fa-cloud-upload-alt"></i> Upload Photo
+				</div>
+			</div>
+
+			<div style="display: flex; gap: 2rem; opacity: 0.7;">
+				<div>
+					<i class="fas fa-shield-alt"
+						style="color: var(--accent); margin-bottom: 0.5rem; font-size: 1.5rem;"></i>
+					<p style="font-size: 0.8rem;">Private & Secure</p>
+				</div>
+				<div>
+					<i class="fas fa-bolt" style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.5rem;"></i>
+					<p style="font-size: 0.8rem;">Real-time Analysis</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Right Side: Camera/Upload Interface -->
+		<div class="camera-panel">
+			<!-- Camera View -->
+			<div id="cameraView" class="view-content active" style="text-align: center;">
+				<div style="position: relative; border-radius: 1.5rem; overflow: hidden; margin-bottom: 1.5rem;">
+					<video id="video" autoplay playsinline></video>
+					<canvas id="canvas" style="display: none;"></canvas>
+
+					<!-- Scanning Overlay -->
+					<div id="scanOverlay"
+						style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none;">
+						<div
+							style="width: 100%; height: 2px; background: var(--secondary); box-shadow: 0 0 20px var(--secondary); animation: scan 1.5s infinite linear;">
+						</div>
+						<div
+							style="position: absolute; top: 1rem; right: 1rem; color: var(--secondary); font-family: monospace; font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 0.2rem 0.5rem; border-radius: 0.5rem;">
+							DETECTING...
+						</div>
+					</div>
+				</div>
+
+				<div id="statusText" style="color: var(--text-muted); margin-bottom: 1.5rem;">
+					<i class="fas fa-circle-notch fa-spin"></i> Initializing camera...
+				</div>
+
+				<button id="startBtn" class="btn btn-primary btn-lg"
+					style="display: none; width: 100%; padding: 1.2rem; border-radius: 1rem;"
+					onclick="manualStartDetection()">
+					<i class="fas fa-play"></i> Start Analysis
+				</button>
+			</div>
+
+			<!-- Face Error Modal (overlaying camera panel) -->
+            <div id="faceErrorModal" class="face-error-modal" aria-hidden="true" style="display:none;">
+                <div class="inner">
+                    <h4>Face Not Detected</h4>
+                    <p id="faceErrorMessage">Please ensure your face is visible to the camera. Avoid covering camera with hand or fingers.</p>
+                    <div>
+                        <button class="close-btn" onclick="hideFaceError()">Got it</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload View -->
+			<div id="uploadView" class="view-content" style="display: none;">
+				<div class="upload-area" onclick="document.getElementById('fileInput').click()"
+					style="border: 2px dashed var(--glass-border); border-radius: 1.5rem; padding: 4rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 2rem;">
+					<div
+						style="width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+						<i class="fas fa-image" style="font-size: 2rem; color: var(--primary);"></i>
+					</div>
+					<h3 style="margin-bottom: 0.5rem;">Click to Upload Image</h3>
+					<p style="color: var(--text-muted); font-size: 0.9rem;">All image formats supported (JPG, PNG, GIF, WebP, BMP, TIFF, etc.)</p>
+					<input type="file" id="fileInput" hidden accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.tif" onchange="handleFileUpload(this)">
+				</div>
+
+				<div style="text-align: center; margin-top: 2rem;">
+					<p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Or select an emotion directly:</p>
+					<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+						<div onclick="selectEmotion('😠', 'Angry')" style="padding: 1.5rem; background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 107, 107, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255, 107, 107, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😠</div>
+							<p style="color: #ff6b6b; font-size: 0.8rem; font-weight: 600;">Angry</p>
+						</div>
+						<div onclick="selectEmotion('😐', 'Neutral')" style="padding: 1.5rem; background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(107, 114, 128, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(107, 114, 128, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😐</div>
+							<p style="color: #6b7280; font-size: 0.8rem; font-weight: 600;">Neutral</p>
+						</div>
+						<div onclick="selectEmotion('😨', 'Fear')" style="padding: 1.5rem; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😨</div>
+							<p style="color: #8b5cf6; font-size: 0.8rem; font-weight: 600;">Fear</p>
+						</div>
+						<div onclick="selectEmotion('😊', 'Happy')" style="padding: 1.5rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(34, 197, 94, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(34, 197, 94, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😊</div>
+							<p style="color: #22c55e; font-size: 0.8rem; font-weight: 600;">Happy</p>
+						</div>
+						<div onclick="selectEmotion('😢', 'Sad')" style="padding: 1.5rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😢</div>
+							<p style="color: #3b82f6; font-size: 0.8rem; font-weight: 600;">Sad</p>
+						</div>
+						<div onclick="selectEmotion('😮', 'Surprise')" style="padding: 1.5rem; background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 1rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(249, 115, 22, 0.2)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(249, 115, 22, 0.1)'; this.style.transform='translateY(0)'">
+							<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😮</div>
+							<p style="color: #f97316; font-size: 0.8rem; font-weight: 600;">Surprise</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Processing View -->
+			<div id="processingUI" style="display: none; text-align: center; padding: 4rem 2rem;">
+				<div class="spinner"
+					style="width: 60px; height: 60px; border: 4px solid var(--glass-border); border-top: 4px solid var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 2rem;">
+				</div>
+				<h3 style="margin-bottom: 0.5rem;">Analyzing Expressions...</h3>
+				<p style="color: var(--text-muted);">Finding the perfect {{singer}} track for you.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	@keyframes scan {
+		0% {
+			top: 0;
+		}
+
+		50% {
+			top: 100%;
+		}
+
+		100% {
+			top: 0;
+		}
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	const video = document.getElementById('video');
+	const canvas = document.getElementById('canvas');
+	const statusText = document.getElementById('statusText');
+	const startBtn = document.getElementById('startBtn');
+	const processingUI = document.getElementById('processingUI');
+	const scanOverlay = document.getElementById('scanOverlay');
+	let stream = null;
+	let detectionInProgress = false;
+
+	function switchTab(type) {
+		const tabs = document.querySelectorAll('.tab-pill');
+		const cameraView = document.getElementById('cameraView');
+		const uploadView = document.getElementById('uploadView');
+
+		if (type === 'camera') {
+			tabs[0].classList.add('active');
+			tabs[1].classList.remove('active');
+			cameraView.style.display = 'block';
+			uploadView.style.display = 'none';
+			initCamera();
+		} else {
+			tabs[0].classList.remove('active');
+			tabs[1].classList.add('active');
+			cameraView.style.display = 'none';
+			uploadView.style.display = 'block';
+			stopCamera();
+		}
+	}
+
+	async function initCamera() {
+		try {
+			statusText.innerHTML = '<i class="fas fa-camera"></i> Requesting access...';
+			stream = await navigator.mediaDevices.getUserMedia({
+				video: { facingMode: 'user', width: 640, height: 480 },
+				audio: false
+			});
+			video.srcObject = stream;
+			video.onloadedmetadata = () => {
+				video.play();
+				statusText.innerHTML = '<i class="fas fa-check-circle" style="color: var(--secondary);"></i> Camera Ready';
+				startBtn.style.display = 'inline-block';
+				// Start periodic lightweight face checks to detect occlusions early
+				startLiveFaceChecks();
+			};
+		} catch (err) {
+			statusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Camera Access Denied';
+			console.error(err);
+		}
+	}
+
+	async function waitForVideoReady(timeout = 3000) {
+	const start = Date.now();
+	return new Promise(resolve => {
+		const check = () => {
+			if (video && video.readyState >= 2 && video.videoWidth > 0) return resolve(true);
+			if (Date.now() - start > timeout) return resolve(false);
+			setTimeout(check, 100);
+		};
+		check();
+	});
+}
+
+async function manualStartDetection() {
+	// hide any previous modal and suppress immediate re-show while user initiated detection
+	hideFaceError(15000);
+	window._faceErrorSuppressedUntil = Date.now() + 15000;
+
+	// Pause live checks while user starts a full detection
+	if (window._faceCheckInterval) { clearInterval(window._faceCheckInterval); window._faceCheckInterval = null; }
+
+	// Ensure camera stream is active; if not, initialize it and wait briefly for readiness
+	if (!stream) {
+		await initCamera();
+		const ready = await waitForVideoReady(4000);
+		if (!ready) {
+			statusText.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i> Camera not ready. Please allow camera access.';
+			startBtn.style.display = 'inline-block';
+			// restart live checks if stream exists
+			if (stream) startLiveFaceChecks();
+			return;
+		}
+	}
+
+	startBtn.style.display = 'none';
+	scanOverlay.style.display = 'block';
+	statusText.innerHTML = 'Scanning facial landmarks...';
+
+	// Add a small delay for "scanning effect" before capturing
+	setTimeout(() => {
+		captureAndProcess();
+	}, 1500);
+}
+
+	function stopCamera() {
+		if (stream) {
+			stream.getTracks().forEach(track => track.stop());
+			video.srcObject = null;
+			// mark stream as cleared so further logic will re-initialize if needed
+			stream = null;
+		}
+		// stop periodic checks
+		if (window._faceCheckInterval) { clearInterval(window._faceCheckInterval); window._faceCheckInterval = null; }
+	}
+
+	async function captureAndProcess() {
+		if (detectionInProgress) return;
+		detectionInProgress = true;
+
+		try {
+			// Guard: ensure video has valid frame dimensions
+			if (!video || video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+				detectionInProgress = false;
+				startBtn.style.display = 'inline-block';
+				statusText.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i> Camera not ready. Please try again.';
+				// restart live checks if possible
+				if (stream) startLiveFaceChecks();
+				return;
+			}
+			const ctx = canvas.getContext('2d');
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+
+			// Flip context horizontally for mirror effect if needed, but since we CSS mirrored video, 
+			// we should draw it normally or mirrored depending on backend expectation.
+			// Usually backend expects normal face. Let's draw it normally.
+			ctx.drawImage(video, 0, 0);
+
+			const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+			// Show processing UI
+			document.getElementById('cameraView').style.display = 'none';
+			processingUI.style.display = 'block';
+			// keep camera running during server processing so Start Analysis can re-use the stream
+
+			const response = await fetch('/process_emotion', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ image: imageData })
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				setTimeout(() => window.location.href = '/emotion_result', 500);
+			} else {
+				detectionInProgress = false;
+				processingUI.style.display = 'none';
+				document.getElementById('cameraView').style.display = 'block';
+				// Show modal overlay so message appears in front of the camera view
+				showFaceError(result.message || 'No face detected. Please ensure good lighting and face the camera directly.');
+				statusText.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + result.message;
+				startBtn.style.display = 'inline-block';
+				scanOverlay.style.display = 'none';
+				if (stream) startLiveFaceChecks();
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			detectionInProgress = false;
+			processingUI.style.display = 'none';
+			document.getElementById('cameraView').style.display = 'block';
+			startBtn.style.display = 'inline-block';
+			showFaceError((error && error.message) ? error.message : 'Error processing camera input. Please ensure your face is visible and try again.');
+			if (stream) startLiveFaceChecks();
+		}
+	}
+
+	async function handleFileUpload(input) {
+		if (input.files && input.files[0]) {
+			const reader = new FileReader();
+			reader.onload = async (e) => {
+				document.getElementById('uploadView').style.display = 'none';
+				processingUI.style.display = 'block';
+
+				try {
+					const response = await fetch('/process_emotion', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ image: e.target.result })
+					});
+					const result = await response.json();
+					if (result.success) {
+						window.location.href = '/emotion_result';
+					} else {
+						processingUI.style.display = 'none';
+						document.getElementById('uploadView').style.display = 'block';
+					}
+				} catch (error) {
+					console.error(error);
+					processingUI.style.display = 'none';
+					document.getElementById('uploadView').style.display = 'block';
+				}
+			};
+			reader.readAsDataURL(input.files[0]);
+		}
+	}
+
+	async function detectEmotionEmoji(emoji, emotion) {
+		document.getElementById('uploadView').style.display = 'none';
+		processingUI.style.display = 'block';
+		processingUI.innerHTML = `
+			<div style="animation: float 2s ease-in-out infinite;">
+				<div style="font-size: 4rem; margin-bottom: 2rem;">${emoji}</div>
+				<p style="color: var(--text-muted); margin-bottom: 1rem;">Processing ${emotion} emotion...</p>
+				<div style="display: inline-block;">
+					<i class="fas fa-spinner" style="font-size: 2rem; color: var(--primary); animation: spin 2s linear infinite;"></i>
+				</div>
+			</div>
+		`;
+
+		try {
+			const response = await fetch('/process_emotion', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ emotion: emotion, emoji: emoji, isEmoji: true })
+			});
+			const result = await response.json();
+			console.log('Response:', result);
+			if (result.success) {
+				setTimeout(() => window.location.href = '/emotion_result', 500);
+			} else {
+				processingUI.style.display = 'none';
+				document.getElementById('uploadView').style.display = 'block';
+				alert(result.message || 'Error processing emotion');
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			processingUI.style.display = 'none';
+			document.getElementById('uploadView').style.display = 'block';
+			alert('Error: ' + error.message);
+		}
+	}
+
+	async function selectEmotion(emoji, emotion) {
+		document.getElementById('uploadView').style.display = 'none';
+		processingUI.style.display = 'block';
+		processingUI.innerHTML = `
+			<div style="animation: float 2s ease-in-out infinite;">
+				<div style="font-size: 4rem; margin-bottom: 2rem;">${emoji}</div>
+				<p style="color: var(--text-muted); margin-bottom: 1rem;">Getting recommendations...</p>
+				<div style="display: inline-block;">
+					<i class="fas fa-spinner" style="font-size: 2rem; color: var(--primary); animation: spin 2s linear infinite;"></i>
+				</div>
+			</div>
+		`;
+
+		try {
+			const response = await fetch('/process_emotion', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ isEmoji: true, emotion: emotion })
+			});
+			const result = await response.json();
+			if (result.success) {
+				setTimeout(() => window.location.href = '/emotion_result', 500);
+			} else {
+				processingUI.style.display = 'none';
+				document.getElementById('uploadView').style.display = 'block';
+				alert(result.message || 'Error processing emotion');
+			}
+		} catch (error) {
+			console.error(error);
+			processingUI.style.display = 'none';
+			document.getElementById('uploadView').style.display = 'block';
+			alert('Error: ' + error.message);
+		}
+	}
+
+	function showErrorModal(message) {
+		const errorModal = document.getElementById('errorModal');
+		const errorMessage = document.getElementById('errorMessage');
+		errorMessage.textContent = message;
+		errorModal.style.display = 'flex';
+	}
+
+	function closeErrorModal() {
+		const errorModal = document.getElementById('errorModal');
+		errorModal.style.display = 'none';
+	}
+
+	function showErrorModal(message) {
+		const errorModal = document.getElementById('errorModal');
+		const errorMessage = document.getElementById('errorMessage');
+		errorMessage.textContent = message;
+		errorModal.style.display = 'flex';
+	}
+
+	function closeErrorModal() {
+		const errorModal = document.getElementById('errorModal');
+		errorModal.style.display = 'none';
+	}
+
+	function showFaceError(message){
+	const modal = document.getElementById('faceErrorModal');
+	const msg = document.getElementById('faceErrorMessage');
+	if(msg) msg.textContent = message;
+	if(modal){ modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); }
+}
+function hideFaceError(suppressMs = 5000){
+	const modal = document.getElementById('faceErrorModal');
+	if(modal){ modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
+	// suppress auto re-show for a short period after user dismisses
+	window._faceErrorSuppressedUntil = Date.now() + (suppressMs || 5000);
+}
+
+// Lightweight periodic face checks: capture small thumbnail and ask server if face/eyes present
+let _faceCheckInFlight = false;
+async function startLiveFaceChecks(){
+    if (window._faceCheckInterval) return;
+    // ensure camera initialized for live checks
+    if (!stream) {
+        try {
+            await initCamera();
+            await waitForVideoReady(3000);
+        } catch (e) {
+            console.warn('Could not initialize camera for live checks', e);
+        }
+    }
+    window._faceCheckInterval = setInterval(checkFacePresence, 1000);
+}
+async function checkFacePresence(){
+    if (!video || video.readyState < 2) return; // not ready
+    if (_faceCheckInFlight) return;
+    _faceCheckInFlight = true;
+    try{
+        // avoid running live-check while a full detection is actively processing
+        if (detectionInProgress) { _faceCheckInFlight = false; return; }
+        // draw small thumbnail to reduce bandwidth
+        const w = 160, h = 120;
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // draw mirrored video correctly for backend expectation (draw normal)
+        ctx.drawImage(video, 0, 0, w, h);
+        const thumb = canvas.toDataURL('image/jpeg', 0.6);
+        const resp = await fetch('/check_face', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ image: thumb })
+        });
+        const json = await resp.json();
+        // If user recently dismissed the modal, skip re-show until suppression expires
+        if (window._faceErrorSuppressedUntil && Date.now() < window._faceErrorSuppressedUntil){
+            // keep it hidden until suppression window passes
+            hideFaceError();
+        } else {
+            if (!json.success){
+                showFaceError(json.message || 'No face detected');
+            } else {
+                hideFaceError();
+            }
+        }
+    }catch(e){
+        console.error('Live check error', e);
+    }finally{
+        _faceCheckInFlight = false;
+    }
+}
+
+startBtn && startBtn.addEventListener('click', hideFaceError);
+window.addEventListener('load', initCamera);
+
+
+
+window.addEventListener('beforeunload', stopCamera);
+window.addEventListener('beforeunload', stopCamera);
+window.onerror = function(msg, url, line, col, error){ showFaceError(msg || 'An unexpected error occurred.'); return false; };
+	window.addEventListener('beforeunload', stopCamera);
+</script>
+{% endblock %}
