@@ -84,7 +84,7 @@ def get_model():
 	if model is None:
 		print("Lazy loading model...")
 		from keras.models import load_model
-		model = load_model('Models/model_new.h5', compile=False)
+		model = load_model('Models/model_new.h5', compile=False, safe_mode=False)
 	return model
 
 cascade = cv2.CascadeClassifier(haarcascade)
