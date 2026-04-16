@@ -23,7 +23,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key_if_none_set')
+app.secret_key = os.getenv('FLASK_SECRET_KEY', '2b1f9b07bd7905d8b029a1ecdaa4dbee')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
 # Serve assets folder
@@ -34,11 +34,11 @@ def serve_assets(filename):
 
 # Database Configuration
 # Supporting multiple common env var names for database connections
-mongodb_uri = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL') or os.getenv('DATABASE_URL')
+# FALLBACK: Using hardcoded Atlas URI as requested for immediate deployment
+mongodb_uri = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL') or os.getenv('DATABASE_URL') or 'mongodb+srv://Radhe:Radhe2059@cluster0.flk4ry8.mongodb.net/?appName=Cluster0'
 
-if not mongodb_uri:
-    print("CRITICAL: No MongoDB connection string found in environment variables (MONGODB_URI, MONGO_URL, or DATABASE_URL).")
-    print("Falling back to localhost:27017 (Local Dev Mode).")
+if not mongodb_uri or "localhost" in mongodb_uri:
+    print("WARNING: Using local database fallback.")
     mongodb_uri = 'mongodb://localhost:27017/MOODIFY'
 else:
     # Log connection attempt (hiding credentials for security)
@@ -55,10 +55,10 @@ except Exception:
 
 users_collection = db['users']
 
-# SMTP Settings
-SMTP_SENDER_EMAIL = os.getenv('SMTP_SENDER_EMAIL')
-SMTP_SENDER_PASSWORD = os.getenv('SMTP_SENDER_PASSWORD')
-SMTP_RECEIVER_EMAIL = os.getenv('SMTP_RECEIVER_EMAIL')
+# SMTP Settings (Hardcoded fallbacks for Railway compatibility)
+SMTP_SENDER_EMAIL = os.getenv('SMTP_SENDER_EMAIL', 'radheshyamt028@gmail.com')
+SMTP_SENDER_PASSWORD = os.getenv('SMTP_SENDER_PASSWORD', 'qekzkhrqplhvydlt')
+SMTP_RECEIVER_EMAIL = os.getenv('SMTP_RECEIVER_EMAIL', 'radheshyamt028@gmail.com')
 
 # Authentication Setup
 bcrypt = Bcrypt(app)
