@@ -35,7 +35,10 @@ logger = logging.getLogger(__name__)
 def internal_error(error):
     import traceback
     logger.error(f"500 Error: {error}\n{traceback.format_exc()}")
-    return render_template('forgot_password.html'), 500
+    try:
+        return render_template('forgot_password.html'), 500
+    except:
+        return "Internal Server Error. Please refresh the page.", 500
 
 @app.errorhandler(404)
 def not_found_error(error):
@@ -51,6 +54,10 @@ def serve_assets(filename):
 # Supporting multiple common env var names for database connections
 # FALLBACK: Using hardcoded Atlas URI as requested for immediate deployment
 mongodb_uri = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL') or os.getenv('DATABASE_URL') or 'mongodb+srv://Radhe:Radhe2059@cluster0.flk4ry8.mongodb.net/?appName=Cluster0'
+
+# Proxy fix for Railway (ensures url_for handles https correctly)
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 if not mongodb_uri or "localhost" in mongodb_uri:
     print("WARNING: Using local database fallback.")
@@ -328,11 +335,21 @@ def forgot_password():
                         body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
                         msg.attach(MIMEText(body, 'plain'))
                         
-                        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
-                        server.starttls()
-                        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-                        server.send_message(msg)
-                        server.quit()
+                        try:
+                            # Try standard TLS first
+                            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
+                            server.starttls()
+                            server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
+                            server.send_message(msg)
+                            server.quit()
+                        except Exception as e1:
+                            print(f"SMTP 587 failed, trying 465: {e1}")
+                            # Fallback to SSL port 465
+                            server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15)
+                            server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
+                            server.send_message(msg)
+                            server.quit()
+
                         flash(f"Password reset link sent to {email}.", "success")
                         print("DEBUG: Reset email sent successfully.")
                     except Exception as e:
