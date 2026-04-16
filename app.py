@@ -33,13 +33,13 @@ def serve_assets(filename):
     return send_from_directory('assets', filename)
 
 # Database Configuration
-mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/moodify_db')
+mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
 client = MongoClient(mongodb_uri)
-try:
-    # Try to get the database from the URI, otherwise fallback to 'moodify_db'
-    db = client.get_default_database()
-except:
+# Prioritize Atlas (mongodb.net) and use 'moodify_db' database
+if 'mongodb.net' in mongodb_uri or 'mongodb.com' in mongodb_uri:
     db = client['moodify_db']
+else:
+    db = client.get_default_database() or client['moodify_db']
 users_collection = db['users']
 
 # SMTP Settings
@@ -199,6 +199,8 @@ def signup():
             if existing_user:
                 flash("Email already exists! Please login or use a different email.", "error")
                 return render_template('signup.html')
+                flash("Email already exists!", "error")
+                return redirect(url_for('signup'))
                 
             hashed_password = bcrypt.generate_password_hash(password.encode('utf-8')).decode('utf-8')
             users_collection.insert_one({
