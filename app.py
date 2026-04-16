@@ -83,8 +83,20 @@ def get_model():
 	global model
 	if model is None:
 		print("Lazy loading model...")
+		import keras
 		from keras.models import load_model
-		model = load_model('Models/model_new.h5', compile=False, safe_mode=False)
+		from keras.layers import Dense
+
+		# Monkeypatch Dense to ignore quantization_config (Keras 3 compatibility)
+		original_dense_from_config = Dense.from_config
+		@classmethod
+		def patched_from_config(cls, config):
+			if 'quantization_config' in config:
+				config.pop('quantization_config')
+			return original_dense_from_config(config)
+		Dense.from_config = patched_from_config
+
+		model = load_model('Models/model_new.h5', compile=False)
 	return model
 
 cascade = cv2.CascadeClassifier(haarcascade)
