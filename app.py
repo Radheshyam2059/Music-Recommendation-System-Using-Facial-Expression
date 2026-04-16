@@ -26,6 +26,21 @@ app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', '2b1f9b07bd7905d8b029a1ecdaa4dbee')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Global error handlers for production
+@app.errorhandler(500)
+def internal_error(error):
+    import traceback
+    logger.error(f"500 Error: {error}\n{traceback.format_exc()}")
+    return render_template('forgot_password.html'), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return redirect(url_for('index'))
+
 # Serve assets folder
 from flask import send_from_directory
 @app.route('/assets/<path:filename>')
@@ -313,7 +328,7 @@ def forgot_password():
                         body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
                         msg.attach(MIMEText(body, 'plain'))
                         
-                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
                         server.starttls()
                         server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
                         server.send_message(msg)
