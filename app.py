@@ -356,7 +356,8 @@ def forgot_password():
                         import traceback
                         traceback.print_exc()
                         print(f"Email Error in /forgot_password: {e}")
-                        flash("Error sending email. Please try again later.", "error")
+                        # Show the actual error to the user for debugging
+                        flash(f"Error sending email: {str(e)}", "error")
                 else:
                     print(f"DEBUG Simulation: Reset Link: {link}") 
                     flash("Reset link sent (Demo Mode: check console)", "success")
