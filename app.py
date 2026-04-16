@@ -33,7 +33,18 @@ def serve_assets(filename):
     return send_from_directory('assets', filename)
 
 # Database Configuration
-mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/MOODIFY')
+# Supporting multiple common env var names for database connections
+mongodb_uri = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL') or os.getenv('DATABASE_URL')
+
+if not mongodb_uri:
+    print("CRITICAL: No MongoDB connection string found in environment variables (MONGODB_URI, MONGO_URL, or DATABASE_URL).")
+    print("Falling back to localhost:27017 (Local Dev Mode).")
+    mongodb_uri = 'mongodb://localhost:27017/MOODIFY'
+else:
+    # Log connection attempt (hiding credentials for security)
+    masked_uri = mongodb_uri.split('@')[-1] if '@' in mongodb_uri else "Remote URI provided"
+    print(f"INFO: Connecting to MongoDB at {masked_uri}")
+
 client = MongoClient(mongodb_uri)
 try:
     # Try getting default database from URI (e.g. Atlas string with /dbname)
