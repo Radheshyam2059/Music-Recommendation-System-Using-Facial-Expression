@@ -283,8 +283,13 @@ def login():
 def forgot_password():
     if request.method == 'POST':
         try:
-            email = request.form.get('email')
+            email = request.form.get('email', '').strip().lower()
             print(f"DEBUG: Forgot password attempt for email: {email}")
+            
+            if not email:
+                flash("Please enter your email address.", "error")
+                return render_template('forgot_password.html')
+            
             user_data = users_collection.find_one({"email": email})
             
             if user_data:
@@ -336,26 +341,34 @@ def forgot_password():
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     try:
-        from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+        from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
         s = URLSafeTimedSerializer(app.secret_key)
         
         try:
             email = s.loads(token, salt='email-confirm', max_age=3600) # 1 hour expiration
         except SignatureExpired:
-            flash("The reset link has expired.", "error")
+            flash("The reset link has expired. Please request a new one.", "error")
             return redirect(url_for('forgot_password'))
-        except Exception as e:
+        except (BadSignature, Exception) as e:
             print(f"DEBUG: Token validation error: {e}")
-            flash("Invalid reset link.", "error")
+            flash("Invalid or corrupted reset link. Please request a new one.", "error")
             return redirect(url_for('forgot_password'))
             
         if request.method == 'POST':
-            password = request.form.get('password')
+            password = request.form.get('password', '')
+            
+            if not password or len(password) < 6:
+                flash("Password must be at least 6 characters long.", "error")
+                return render_template('reset_password.html', token=token)
+            
             # Ensure proper encoding for bcrypt
             hashed_password = bcrypt.generate_password_hash(password.encode('utf-8')).decode('utf-8')
             
-            users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
-            flash("Your password has been updated! Please login.", "success")
+            result = users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
+            if result.modified_count > 0:
+                flash("Your password has been updated! Please login.", "success")
+            else:
+                flash("Your password has been updated! Please login.", "success")
             return redirect(url_for('login'))
             
         return render_template('reset_password.html', token=token)
@@ -363,7 +376,8 @@ def reset_password(token):
         import traceback
         traceback.print_exc()
         print(f"DEBUG: /reset_password error: {e}")
-        return render_template('reset_password.html', token=token, error=str(e))
+        flash("Something went wrong. Please request a new reset link.", "error")
+        return redirect(url_for('forgot_password'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
