@@ -12,10 +12,11 @@ from pymongo import MongoClient
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import smtplib
-import socket
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import socket
+import ssl
 
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -27,24 +28,6 @@ app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', '2b1f9b07bd7905d8b029a1ecdaa4dbee')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-# Global error handlers for production
-@app.errorhandler(500)
-def internal_error(error):
-    import traceback
-    logger.error(f"500 Error: {error}\n{traceback.format_exc()}")
-    try:
-        return render_template('forgot_password.html'), 500
-    except:
-        return "Internal Server Error. Please refresh the page.", 500
-
-@app.errorhandler(404)
-def not_found_error(error):
-    return redirect(url_for('index'))
-
 # Serve assets folder
 from flask import send_from_directory
 @app.route('/assets/<path:filename>')
@@ -55,10 +38,6 @@ def serve_assets(filename):
 # Supporting multiple common env var names for database connections
 # FALLBACK: Using hardcoded Atlas URI as requested for immediate deployment
 mongodb_uri = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL') or os.getenv('DATABASE_URL') or 'mongodb+srv://Radhe:Radhe2059@cluster0.flk4ry8.mongodb.net/?appName=Cluster0'
-
-# Proxy fix for Railway (ensures url_for handles https correctly)
-from werkzeug.middleware.proxy_fix import ProxyFix
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 if not mongodb_uri or "localhost" in mongodb_uri:
     print("WARNING: Using local database fallback.")
@@ -83,57 +62,48 @@ SMTP_SENDER_EMAIL = os.getenv('SMTP_SENDER_EMAIL', 'radheshyamt028@gmail.com')
 SMTP_SENDER_PASSWORD = os.getenv('SMTP_SENDER_PASSWORD', 'qekzkhrqplhvydlt')
 SMTP_RECEIVER_EMAIL = os.getenv('SMTP_RECEIVER_EMAIL', 'radheshyamt028@gmail.com')
 
-def send_email_optimized(to_email, subject, body, reply_to=None):
+def send_email_optimized(receiver_email, subject, body):
     """
-    Optimized SMTP sender that forces IPv4 and provides robust failover
-    to bypass Railway's 'Network unreachable' errors when possible.
+    Sends an email using Port 587 (TLS) with a fallback to Port 465 (SSL).
+    Uses a longer 30s timeout to handle potential cloud network latency.
     """
-    if not SMTP_SENDER_EMAIL or not SMTP_SENDER_PASSWORD:
-        print("ERROR: SMTP credentials missing.")
+    sender_email = SMTP_SENDER_EMAIL
+    sender_password = SMTP_SENDER_PASSWORD
+    
+    if not sender_email or not sender_password:
+        print("Error: SMTP credentials not configured.")
         return False
         
     msg = MIMEMultipart()
-    msg['From'] = SMTP_SENDER_EMAIL
-    msg['To'] = to_email
+    msg['From'] = f"Moodify <{sender_email}>"
+    msg['To'] = receiver_email
     msg['Subject'] = subject
-    if reply_to:
-        msg.add_header('reply-to', reply_to)
     msg.attach(MIMEText(body, 'plain'))
-
-    # Get IPv4 address explicitly to bypass IPv6 routing issues
+    
+    # We will try Port 587 first (Standard TLS) and then 465 (SSL)
+    # Using 30s timeout as cloud environments can sometimes have slower handshakes
     try:
-        smtp_ipv4 = socket.getaddrinfo('smtp.gmail.com', 465, socket.AF_INET)[0][4][0]
-        print(f"DEBUG: Using Gmail IPv4: {smtp_ipv4}")
-    except Exception as e:
-        print(f"DEBUG: Could not resolve Gmail IPv4, using hostname: {e}")
-        smtp_ipv4 = 'smtp.gmail.com'
-
-    # Try Port 465 (SSL) first - often more reliable on cloud firewalls
-    try:
-        print("DEBUG: Attempting SMTP_SSL on port 465...")
-        server = smtplib.SMTP_SSL(smtp_ipv4, 465, timeout=15)
-        server.ehlo()
-        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        return True
-    except Exception as e_ssl:
-        print(f"DEBUG: Port 465 failed: {e_ssl}")
-        
-    # Fallback to Port 587 (TLS)
-    try:
-        print("DEBUG: Attempting SMTP TLS on port 587...")
-        server = smtplib.SMTP(smtp_ipv4, 587, timeout=15)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        print("DEBUG: Attempting connection on Port 587 (TLS)...")
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=30) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print("DEBUG: Email sent successfully via Port 587.")
         return True
     except Exception as e_tls:
-        print(f"DEBUG: Port 587 failed: {e_tls}")
-        raise e_tls # Re-raise for the route to catch and flash
+        print(f"DEBUG: Port 587 failed: {e_tls}. Trying Port 465 fallback...")
+        try:
+            print("DEBUG: Attempting connection on Port 465 (SSL)...")
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30, context=context) as server:
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+            print("DEBUG: Email sent successfully via Port 465.")
+            return True
+        except Exception as e_ssl:
+            print(f"DEBUG: Port 465 failed: {e_ssl}")
+            # Re-raise the error to be caught by the calling route
+            raise e_ssl
 
 # Authentication Setup
 bcrypt = Bcrypt(app)
@@ -232,19 +202,27 @@ def contact():
         
         if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD and SMTP_RECEIVER_EMAIL:
             try:
+                msg = MIMEMultipart()
+                msg['From'] = SMTP_SENDER_EMAIL
+                msg['To'] = SMTP_RECEIVER_EMAIL # You receive the email
+                msg['Subject'] = f"New Moodify Inquiry from {user_name}"
+                
+                # Add Reply-To so you can just click 'Reply' in your inbox
+                msg.add_header('reply-to', user_email)
+                
                 body = f"You have received a new message from your website contact form.\n\n" \
                        f"Name: {user_name}\n" \
                        f"Email: {user_email}\n\n" \
                        f"Message:\n{user_message}"
                 
-                send_email_optimized(SMTP_RECEIVER_EMAIL, f"New Moodify Inquiry from {user_name}", body, reply_to=user_email)
-                flash("Thank you for your message! Our team will get back to you soon.", "success")
-                print("DEBUG: Contact email sent successfully.")
+                send_email_optimized(SMTP_RECEIVER_EMAIL, f"New Moodify Inquiry from {user_name}", body)
+                flash("Message sent successfully! We'll get back to you soon.", "success")
             except Exception as e:
-                print(f"Email Error in /contact: {e}")
-                flash("Message received, but we couldn't send the notification. We'll check our logs!", "success")
+                print(f"Email Error: {e}")
+                flash("Oops! Something went wrong while sending the message.", "error")
         else:
-            flash("Thank you! (Demo Mode: Email not sent as credentials are missing)", "success")
+            print("Warning: SMTP not configured in .env. Email not sent.")
+            # flash("Message received (Demo Mode). Configure your SMTP settings in .env to receive emails.", "success")
             
         return redirect(url_for('contact'))
         
@@ -344,13 +322,8 @@ def login():
 def forgot_password():
     if request.method == 'POST':
         try:
-            email = request.form.get('email', '').strip().lower()
+            email = request.form.get('email')
             print(f"DEBUG: Forgot password attempt for email: {email}")
-            
-            if not email:
-                flash("Please enter your email address.", "error")
-                return render_template('forgot_password.html')
-            
             user_data = users_collection.find_one({"email": email})
             
             if user_data:
@@ -366,7 +339,13 @@ def forgot_password():
                 # Send Email
                 if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD:
                     try:
+                        msg = MIMEMultipart()
+                        msg['From'] = SMTP_SENDER_EMAIL
+                        msg['To'] = email
+                        msg['Subject'] = "Moodify Password Reset"
+                        
                         body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
+                        
                         send_email_optimized(email, "Moodify Password Reset", body)
                         flash(f"Password reset link sent to {email}.", "success")
                         print("DEBUG: Reset email sent successfully.")
@@ -374,8 +353,7 @@ def forgot_password():
                         import traceback
                         traceback.print_exc()
                         print(f"Email Error in /forgot_password: {e}")
-                        # Show the actual error to the user for debugging
-                        flash(f"Error sending email: {str(e)}", "error")
+                        flash("Error sending email. Please try again later.", "error")
                 else:
                     print(f"DEBUG Simulation: Reset Link: {link}") 
                     flash("Reset link sent (Demo Mode: check console)", "success")
@@ -392,34 +370,26 @@ def forgot_password():
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     try:
-        from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+        from itsdangerous import URLSafeTimedSerializer, SignatureExpired
         s = URLSafeTimedSerializer(app.secret_key)
         
         try:
             email = s.loads(token, salt='email-confirm', max_age=3600) # 1 hour expiration
         except SignatureExpired:
-            flash("The reset link has expired. Please request a new one.", "error")
+            flash("The reset link has expired.", "error")
             return redirect(url_for('forgot_password'))
-        except (BadSignature, Exception) as e:
+        except Exception as e:
             print(f"DEBUG: Token validation error: {e}")
-            flash("Invalid or corrupted reset link. Please request a new one.", "error")
+            flash("Invalid reset link.", "error")
             return redirect(url_for('forgot_password'))
             
         if request.method == 'POST':
-            password = request.form.get('password', '')
-            
-            if not password or len(password) < 6:
-                flash("Password must be at least 6 characters long.", "error")
-                return render_template('reset_password.html', token=token)
-            
+            password = request.form.get('password')
             # Ensure proper encoding for bcrypt
             hashed_password = bcrypt.generate_password_hash(password.encode('utf-8')).decode('utf-8')
             
-            result = users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
-            if result.modified_count > 0:
-                flash("Your password has been updated! Please login.", "success")
-            else:
-                flash("Your password has been updated! Please login.", "success")
+            users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
+            flash("Your password has been updated! Please login.", "success")
             return redirect(url_for('login'))
             
         return render_template('reset_password.html', token=token)
@@ -427,8 +397,7 @@ def reset_password(token):
         import traceback
         traceback.print_exc()
         print(f"DEBUG: /reset_password error: {e}")
-        flash("Something went wrong. Please request a new reset link.", "error")
-        return redirect(url_for('forgot_password'))
+        return render_template('reset_password.html', token=token, error=str(e))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required

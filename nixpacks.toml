@@ -3,4 +3,4 @@ nixPkgs = ["python310", "libglvnd"]
 aptPkgs = ["libgl1"]
 
 [start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 2"
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"

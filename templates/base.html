@@ -66,27 +66,6 @@
     </header>
 
     <main>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="container" style="margin-top: 1rem; margin-bottom: 1rem;">
-            {% for category, message in messages %}
-            <div class="flash-message flash-{{ category }}" 
-                 style="padding: 1rem; border-radius: 0.75rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; 
-                        background: {% if category == 'success' %}rgba(16, 185, 129, 0.15){% else %}rgba(239, 68, 68, 0.15){% endif %};
-                        border: 1px solid {% if category == 'success' %}#10b981{% else %}#ef4444{% endif %};
-                        color: {% if category == 'success' %}#10b981{% else %}#ef4444{% endif %};
-                        animation: slideIn 0.3s ease-out;">
-                <span><i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}" style="margin-right: 0.75rem;"></i>{{ message }}</span>
-                <button onclick="this.parentElement.style.display='none'" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem;">&times;</button>
-            </div>
-            {% endfor %}
-        </div>
-        <style>
-            @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-            .flash-message { backdrop-filter: blur(10px); }
-        </style>
-        {% endif %}
-        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
