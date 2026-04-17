@@ -12,6 +12,7 @@ from pymongo import MongoClient
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import smtplib
+import socket
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
@@ -81,6 +82,58 @@ users_collection = db['users']
 SMTP_SENDER_EMAIL = os.getenv('SMTP_SENDER_EMAIL', 'radheshyamt028@gmail.com')
 SMTP_SENDER_PASSWORD = os.getenv('SMTP_SENDER_PASSWORD', 'qekzkhrqplhvydlt')
 SMTP_RECEIVER_EMAIL = os.getenv('SMTP_RECEIVER_EMAIL', 'radheshyamt028@gmail.com')
+
+def send_email_optimized(to_email, subject, body, reply_to=None):
+    """
+    Optimized SMTP sender that forces IPv4 and provides robust failover
+    to bypass Railway's 'Network unreachable' errors when possible.
+    """
+    if not SMTP_SENDER_EMAIL or not SMTP_SENDER_PASSWORD:
+        print("ERROR: SMTP credentials missing.")
+        return False
+        
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_SENDER_EMAIL
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    if reply_to:
+        msg.add_header('reply-to', reply_to)
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Get IPv4 address explicitly to bypass IPv6 routing issues
+    try:
+        smtp_ipv4 = socket.getaddrinfo('smtp.gmail.com', 465, socket.AF_INET)[0][4][0]
+        print(f"DEBUG: Using Gmail IPv4: {smtp_ipv4}")
+    except Exception as e:
+        print(f"DEBUG: Could not resolve Gmail IPv4, using hostname: {e}")
+        smtp_ipv4 = 'smtp.gmail.com'
+
+    # Try Port 465 (SSL) first - often more reliable on cloud firewalls
+    try:
+        print("DEBUG: Attempting SMTP_SSL on port 465...")
+        server = smtplib.SMTP_SSL(smtp_ipv4, 465, timeout=15)
+        server.ehlo()
+        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e_ssl:
+        print(f"DEBUG: Port 465 failed: {e_ssl}")
+        
+    # Fallback to Port 587 (TLS)
+    try:
+        print("DEBUG: Attempting SMTP TLS on port 587...")
+        server = smtplib.SMTP(smtp_ipv4, 587, timeout=15)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e_tls:
+        print(f"DEBUG: Port 587 failed: {e_tls}")
+        raise e_tls # Re-raise for the route to catch and flash
 
 # Authentication Setup
 bcrypt = Bcrypt(app)
@@ -179,33 +232,19 @@ def contact():
         
         if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD and SMTP_RECEIVER_EMAIL:
             try:
-                msg = MIMEMultipart()
-                msg['From'] = SMTP_SENDER_EMAIL
-                msg['To'] = SMTP_RECEIVER_EMAIL # You receive the email
-                msg['Subject'] = f"New Moodify Inquiry from {user_name}"
-                
-                # Add Reply-To so you can just click 'Reply' in your inbox
-                msg.add_header('reply-to', user_email)
-                
                 body = f"You have received a new message from your website contact form.\n\n" \
                        f"Name: {user_name}\n" \
                        f"Email: {user_email}\n\n" \
                        f"Message:\n{user_message}"
                 
-                msg.attach(MIMEText(body, 'plain'))
-                
-                server = smtplib.SMTP('smtp.gmail.com', 587)
-                server.starttls()
-                server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-                server.send_message(msg)
-                server.quit()
-                flash("Message sent successfully! We'll get back to you soon.", "success")
+                send_email_optimized(SMTP_RECEIVER_EMAIL, f"New Moodify Inquiry from {user_name}", body, reply_to=user_email)
+                flash("Thank you for your message! Our team will get back to you soon.", "success")
+                print("DEBUG: Contact email sent successfully.")
             except Exception as e:
-                print(f"Email Error: {e}")
-                flash("Oops! Something went wrong while sending the message.", "error")
+                print(f"Email Error in /contact: {e}")
+                flash("Message received, but we couldn't send the notification. We'll check our logs!", "success")
         else:
-            print("Warning: SMTP not configured in .env. Email not sent.")
-            # flash("Message received (Demo Mode). Configure your SMTP settings in .env to receive emails.", "success")
+            flash("Thank you! (Demo Mode: Email not sent as credentials are missing)", "success")
             
         return redirect(url_for('contact'))
         
@@ -327,29 +366,8 @@ def forgot_password():
                 # Send Email
                 if SMTP_SENDER_EMAIL and SMTP_SENDER_PASSWORD:
                     try:
-                        msg = MIMEMultipart()
-                        msg['From'] = SMTP_SENDER_EMAIL
-                        msg['To'] = email
-                        msg['Subject'] = "Moodify Password Reset"
-                        
                         body = f"Click the link below to reset your password:\n{link}\n\nIf you did not request this, please ignore this email."
-                        msg.attach(MIMEText(body, 'plain'))
-                        
-                        try:
-                            # Try standard TLS first
-                            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
-                            server.starttls()
-                            server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-                            server.send_message(msg)
-                            server.quit()
-                        except Exception as e1:
-                            print(f"SMTP 587 failed, trying 465: {e1}")
-                            # Fallback to SSL port 465
-                            server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15)
-                            server.login(SMTP_SENDER_EMAIL, SMTP_SENDER_PASSWORD)
-                            server.send_message(msg)
-                            server.quit()
-
+                        send_email_optimized(email, "Moodify Password Reset", body)
                         flash(f"Password reset link sent to {email}.", "success")
                         print("DEBUG: Reset email sent successfully.")
                     except Exception as e:
