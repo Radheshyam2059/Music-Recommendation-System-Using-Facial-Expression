@@ -17,6 +17,7 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import socket
 import ssl
+import threading
 
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -64,15 +65,25 @@ SMTP_RECEIVER_EMAIL = os.getenv('SMTP_RECEIVER_EMAIL', 'radheshyamt028@gmail.com
 
 def send_email_optimized(receiver_email, subject, body):
     """
-    Sends an email using Port 587 (TLS) with a fallback to Port 465 (SSL).
-    Uses a longer 30s timeout to handle potential cloud network latency.
+    Spawns a background thread to send an email.
+    Prevents the main web worker from hanging or timing out.
+    """
+    thread = threading.Thread(target=_send_email_async_task, args=(receiver_email, subject, body))
+    thread.daemon = True # Ensure thread doesn't block app exit
+    thread.start()
+    return True
+
+def _send_email_async_task(receiver_email, subject, body):
+    """
+    The actual SMTP connection logic run in a background thread.
+    Includes longer timeout and fallback ports.
     """
     sender_email = SMTP_SENDER_EMAIL
     sender_password = SMTP_SENDER_PASSWORD
     
     if not sender_email or not sender_password:
         print("Error: SMTP credentials not configured.")
-        return False
+        return
         
     msg = MIMEMultipart()
     msg['From'] = f"Moodify <{sender_email}>"
@@ -80,30 +91,28 @@ def send_email_optimized(receiver_email, subject, body):
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
     
-    # We will try Port 587 first (Standard TLS) and then 465 (SSL)
-    # Using 30s timeout as cloud environments can sometimes have slower handshakes
+    # Try Port 587 (TLS) first and then 465 (SSL)
     try:
-        print("DEBUG: Attempting connection on Port 587 (TLS)...")
+        print(f"DEBUG [Background]: Attempting connection to Port 587 for {receiver_email}...")
         with smtplib.SMTP('smtp.gmail.com', 587, timeout=30) as server:
             server.starttls()
             server.login(sender_email, sender_password)
             server.send_message(msg)
-        print("DEBUG: Email sent successfully via Port 587.")
-        return True
+        print(f"DEBUG [Background]: Email sent successfully via Port 587 to {receiver_email}.")
     except Exception as e_tls:
-        print(f"DEBUG: Port 587 failed: {e_tls}. Trying Port 465 fallback...")
+        print(f"DEBUG [Background]: Port 587 failed: {e_tls}. Trying Port 465 fallback...")
         try:
-            print("DEBUG: Attempting connection on Port 465 (SSL)...")
+            print(f"DEBUG [Background]: Attempting connection to Port 465 for {receiver_email}...")
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30, context=context) as server:
                 server.login(sender_email, sender_password)
                 server.send_message(msg)
-            print("DEBUG: Email sent successfully via Port 465.")
-            return True
+            print(f"DEBUG [Background]: Email sent successfully via Port 465 to {receiver_email}.")
         except Exception as e_ssl:
-            print(f"DEBUG: Port 465 failed: {e_ssl}")
-            # Re-raise the error to be caught by the calling route
-            raise e_ssl
+            print(f"DEBUG [Background] CRITICAL: Both ports failed for {receiver_email}: {e_ssl}")
+            # Optionally log to a file for persistence
+            with open("email_error.log", "a") as f:
+                f.write(f"{datetime.utcnow().isoformat()} - Error sending to {receiver_email}: {e_ssl}\n")
 
 # Authentication Setup
 bcrypt = Bcrypt(app)
